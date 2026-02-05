@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Last Updated:** 2026-02-05T00:00:00Z
-**Current Phase:** 1 - Core Orchestrator (MVP) - COMPLETE - PENDING REVIEW
+**Current Phase:** 2 - Architecture Pipeline
 
 ---
 
@@ -267,6 +267,93 @@
 **Review Sign-off:**
 - [ ] All specialist reviews completed
 - [ ] All findings resolved (no deferred issues)
+- [ ] Lessons learned documented
+- [ ] Task tracker updated
+- [ ] Final commit merged to main
+
+---
+
+## Phase 2: Architecture Pipeline
+
+### 2.1 Specification Ingestion
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P2-001 | Create specification parser module | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-002 | Implement markdown spec ingestion | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-003 | Implement JSON spec ingestion | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-004 | Add spec validation logic | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-005 | Write unit tests for spec parser | 🔲 PENDING | - | phase-2-integration | - | - | - |
+
+### 2.2 Interview Agent
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P2-006 | Create interviewer agent definition | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-007 | Write interviewer system prompt template | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-008 | Implement question generation logic | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-009 | Create spec clarification workflow | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-010 | Write integration tests for interviewer | 🔲 PENDING | - | phase-2-integration | - | - | - |
+
+### 2.3 Architect Agent
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P2-011 | Create architect agent definition | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-012 | Write architect system prompt template | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-013 | Implement architecture document generator | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-014 | Add technology decision framework | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-015 | Write integration tests for architect | 🔲 PENDING | - | phase-2-integration | - | - | - |
+
+### 2.4 Task Decomposition
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P2-016 | Create planner agent definition | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-017 | Write planner system prompt template | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-018 | Implement task breakdown algorithm | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-019 | Add dependency graph generator | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-020 | Implement parallel group assignment | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-021 | Write integration tests for planner | 🔲 PENDING | - | phase-2-integration | - | - | - |
+
+### 2.5 Repository Scaffolding
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P2-022 | Create repository template system | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-023 | Implement Python project scaffolding | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-024 | Implement TypeScript project scaffolding | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-025 | Add CLAUDE.md generator | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-026 | Write tests for scaffolding | 🔲 PENDING | - | phase-2-integration | - | - | - |
+
+### 2.6 Nginx Integration
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P2-027 | Create nginx-proxy-add.sh script | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-028 | Create nginx-proxy-remove.sh script | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-029 | Create nginx-proxy-modify.sh script | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-030 | Implement Hostinger DNS API integration | 🔲 PENDING | - | phase-2-integration | - | - | - |
+| P2-031 | Document nginx automation usage | 🔲 PENDING | - | phase-2-integration | - | - | - |
+
+### Phase 2 Summary
+
+| Section | Tasks | Status |
+|---------|-------|--------|
+| 2.1 Specification Ingestion | 5 | 🔲 PENDING |
+| 2.2 Interview Agent | 5 | 🔲 PENDING |
+| 2.3 Architect Agent | 5 | 🔲 PENDING |
+| 2.4 Task Decomposition | 6 | 🔲 PENDING |
+| 2.5 Repository Scaffolding | 5 | 🔲 PENDING |
+| 2.6 Nginx Integration | 5 | 🔲 PENDING |
+| **Total** | **31** | **0/31 DONE** |
+
+### Phase 2 Sign-off Checklist
+
+- [ ] All 31 tasks completed
+- [ ] All specialist reviews passed
+- [ ] All findings resolved
+- [ ] All tests passing
 - [ ] Lessons learned documented
 - [ ] Task tracker updated
 - [ ] Final commit merged to main
