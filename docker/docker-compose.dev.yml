@@ -1,0 +1,28 @@
+# Development override - use with:
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up
+services:
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: runtime
+    volumes:
+      - ../src:/app/src:ro
+      - ../agent-templates:/app/agent-templates:ro
+      - ../context-templates:/app/context-templates:ro
+      - forgemaster-logs:/app/logs
+    environment:
+      DATABASE_URL: postgresql+asyncpg://forgemaster:devpassword@postgres:5432/forgemaster
+      OLLAMA_URL: http://ollama:11434
+      LOG_LEVEL: DEBUG
+    command: ["--reload"]
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+
+  ollama:
+    ports:
+      - "11434:11434"

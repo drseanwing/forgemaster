@@ -1,0 +1,64 @@
+services:
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: forgemaster-orchestrator
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+asyncpg://forgemaster:${POSTGRES_PASSWORD}@postgres:5432/forgemaster
+      OLLAMA_URL: http://ollama:11434
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    volumes:
+      - forgemaster-logs:/app/logs
+      - forgemaster-context:/app/context
+    networks:
+      - forgemaster
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: forgemaster-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: forgemaster
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: forgemaster
+    ports:
+      - "5432:5432"
+    volumes:
+      - forgemaster-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forgemaster"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - forgemaster
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: forgemaster-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - forgemaster-ollama:/root/.ollama
+    networks:
+      - forgemaster
+
+volumes:
+  forgemaster-db:
+  forgemaster-logs:
+  forgemaster-context:
+  forgemaster-ollama:
+
+networks:
+  forgemaster:
+    driver: bridge
