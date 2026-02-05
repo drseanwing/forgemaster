@@ -10,6 +10,12 @@ tasks, checking for security issues, architectural consistency, spec
 compliance, and code quality.
 """
 
+from forgemaster.review.consolidator import (
+    ConsolidatedFinding,
+    FindingConsolidator,
+    FixTask,
+    TaskComplexity,
+)
 from forgemaster.review.cycle import (
     FindingSeverity,
     InvalidReviewTransitionError,
@@ -25,6 +31,12 @@ from forgemaster.review.cycle import (
 )
 
 __all__ = [
+    # Consolidator
+    "ConsolidatedFinding",
+    "FindingConsolidator",
+    "FixTask",
+    "TaskComplexity",
+    # Cycle
     "FindingSeverity",
     "InvalidReviewTransitionError",
     "ReviewCycle",
