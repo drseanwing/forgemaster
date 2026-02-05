@@ -36,6 +36,7 @@ Example usage:
 from __future__ import annotations
 
 import asyncio
+import git
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
@@ -526,8 +527,6 @@ class WorktreePool:
             info.status = WorktreeStatus.CLEANING
 
             # Use git from the worktree's repo
-            import git
-
             worktree_repo = git.Repo(info.path)
 
             # Reset any uncommitted changes to HEAD

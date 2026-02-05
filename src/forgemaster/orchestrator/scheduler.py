@@ -178,10 +178,7 @@ class ParallelGroupScheduler:
             groups.append(sg)
 
         # Compute waves based on inter-group dependencies
-        waves = self.compute_waves(groups, tasks)
-        for sg in groups:
-            # wave was set inside compute_waves
-            pass
+        self.compute_waves(groups, tasks)
 
         # Sort by wave then group_id for determinism
         groups.sort(key=lambda g: (g.wave, g.group_id))

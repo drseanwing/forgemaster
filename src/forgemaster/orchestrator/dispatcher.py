@@ -33,6 +33,7 @@ from forgemaster.context.generator import ContextGenerator
 from forgemaster.database.models.task import Task, TaskStatus
 from forgemaster.database.queries.task import get_next_task, get_ready_tasks
 from forgemaster.orchestrator.state_machine import InvalidTransitionError, TaskStateMachine
+from forgemaster.pipeline.worktree import WorktreePool
 
 logger = structlog.get_logger(__name__)
 
@@ -601,7 +602,7 @@ class MultiWorkerDispatcher:
         state_machine: TaskStateMachine,
         session_manager: AgentSessionManager,
         context_generator: ContextGenerator,
-        worktree_pool: Any,
+        worktree_pool: WorktreePool,
         result_handler: Any | None = None,
         poll_interval: float = 5.0,
     ) -> None:
@@ -629,6 +630,7 @@ class MultiWorkerDispatcher:
 
         self._max_workers: int = config.max_concurrent_workers
         self._semaphore = asyncio.Semaphore(self._max_workers)
+        self._active_count: int = 0
         self._running: bool = False
         self._poll_task: asyncio.Task[None] | None = None
         self._health_task: asyncio.Task[None] | None = None
@@ -655,13 +657,9 @@ class MultiWorkerDispatcher:
         """Number of workers currently executing tasks.
 
         Returns:
-            Count of workers in ASSIGNED, RUNNING, or COMPLETING state.
+            Count of active workers.
         """
-        return sum(
-            1
-            for w in self._workers.values()
-            if w.state in (WorkerState.ASSIGNED, WorkerState.RUNNING, WorkerState.COMPLETING)
-        )
+        return self._active_count
 
     @property
     def available_slots(self) -> int:
@@ -670,7 +668,7 @@ class MultiWorkerDispatcher:
         Returns:
             Difference between max workers and active workers.
         """
-        return max(0, self._max_workers - self.active_workers)
+        return max(0, self._max_workers - self._active_count)
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -909,7 +907,7 @@ class MultiWorkerDispatcher:
         task_id = str(task.id)
 
         # Try to acquire the concurrency semaphore (non-blocking)
-        if not self._semaphore._value > 0:
+        if self._active_count >= self._max_workers:
             self._logger.debug(
                 "dispatch_blocked_by_semaphore",
                 task_id=task_id,
@@ -918,6 +916,7 @@ class MultiWorkerDispatcher:
             return None
 
         await self._semaphore.acquire()
+        self._active_count += 1
 
         try:
             # Acquire worktree from pool
@@ -959,6 +958,7 @@ class MultiWorkerDispatcher:
 
         except Exception as e:
             self._semaphore.release()
+            self._active_count -= 1
             self._logger.exception(
                 "worker_dispatch_failed",
                 task_id=task_id,
@@ -996,6 +996,7 @@ class MultiWorkerDispatcher:
 
         # Release semaphore
         self._semaphore.release()
+        self._active_count -= 1
 
         # Remove from registries
         self._workers.pop(worker_id, None)

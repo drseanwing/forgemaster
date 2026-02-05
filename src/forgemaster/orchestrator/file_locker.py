@@ -23,6 +23,7 @@ Example:
 
 from __future__ import annotations
 
+import uuid
 from datetime import datetime, timezone
 from typing import Callable
 
@@ -135,7 +136,7 @@ class FileLocker:
             for path in normalised:
                 lock = FileLock(
                     file_path=path,
-                    task_id=task_id,
+                    task_id=uuid.UUID(task_id),
                     worker_id=worker_id,
                     acquired_at=now,
                     lock_type=lock_type,
@@ -173,7 +174,7 @@ class FileLocker:
             stmt = (
                 update(FileLock)
                 .where(
-                    FileLock.task_id == task_id,
+                    FileLock.task_id == uuid.UUID(task_id),
                     FileLock.released_at.is_(None),
                 )
                 .values(released_at=now)
@@ -291,7 +292,7 @@ class FileLocker:
         """
         async with self.session_factory() as session:
             stmt = select(FileLock).where(
-                FileLock.task_id == task_id,
+                FileLock.task_id == uuid.UUID(task_id),
                 FileLock.released_at.is_(None),
             )
             result = await session.execute(stmt)
@@ -376,7 +377,7 @@ class FileLocker:
         stmt = select(FileLock).where(
             FileLock.file_path.in_(normalised_paths),
             FileLock.released_at.is_(None),
-            FileLock.task_id != task_id,
+            FileLock.task_id != uuid.UUID(task_id),
         )
         result = await session.execute(stmt)
         active_locks = result.scalars().all()
