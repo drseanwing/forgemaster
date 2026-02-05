@@ -13,22 +13,12 @@ executable task plans with precise ordering and parallelization strategies.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 import structlog
 from pydantic import BaseModel, Field
 
-if TYPE_CHECKING:
-    # ArchitectureDocument may be defined by parallel agent
-    # If it doesn't exist yet, we define a minimal version for type checking
-    # TODO: Reconcile with actual ArchitectureDocument when architect agent is implemented
-    from forgemaster.architecture.spec_parser import SpecDocument as ArchitectureDocument
-else:
-    # At runtime, try to import, fall back to SpecDocument
-    try:
-        from forgemaster.architecture.architect import ArchitectureDocument
-    except ImportError:
-        from forgemaster.architecture.spec_parser import SpecDocument as ArchitectureDocument
+from forgemaster.architecture.architect import ArchitectureDocument
 
 logger = structlog.get_logger(__name__)
 

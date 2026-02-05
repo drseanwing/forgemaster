@@ -81,6 +81,11 @@ __all__ = [
     "ParallelGroupAssigner",
     "ParallelGroup",
     "FileConflict",
+    "RepositoryScaffolder",
+    "ScaffoldResult",
+    "ProjectTemplate",
+    "TemplateRegistry",
+    "ClaudeMdGenerator",
 ]
 
 from forgemaster.architecture.architect import (
@@ -119,6 +124,13 @@ from forgemaster.architecture.planner import (
     TaskNode,
     TaskPhase,
     TaskPlan,
+)
+from forgemaster.architecture.scaffolder import (
+    ClaudeMdGenerator,
+    ProjectTemplate,
+    RepositoryScaffolder,
+    ScaffoldResult,
+    TemplateRegistry,
 )
 from forgemaster.architecture.spec_parser import (
     SpecDocument,
