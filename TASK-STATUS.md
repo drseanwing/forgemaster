@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Last Updated:** 2026-02-05T00:00:00Z
-**Current Phase:** 2 - Architecture Pipeline
+**Current Phase:** 3 - Parallelisation
 
 ---
 
@@ -351,6 +351,80 @@
 ### Phase 2 Sign-off Checklist
 
 - [ ] All 31 tasks completed
+- [ ] All specialist reviews passed
+- [ ] All findings resolved
+- [ ] All tests passing
+- [ ] Lessons learned documented
+- [ ] Task tracker updated
+- [ ] Final commit merged to main
+
+---
+
+## Phase 3: Parallelisation
+
+### 3.1 Git Worktree Management
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P3-001 | Implement worktree creation function | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-002 | Implement worktree cleanup function | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-003 | Add worktree pool manager | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-004 | Implement worktree-to-branch mapping | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-005 | Write integration tests for worktree management | 🔲 PENDING | - | phase-3-integration | - | - | - |
+
+### 3.2 Multi-Worker Dispatcher
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P3-006 | Extend dispatcher for multiple workers | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-007 | Implement worker slot allocation | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-008 | Add concurrent task limit enforcement | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-009 | Implement worker health tracking | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-010 | Write unit tests for multi-worker dispatcher | 🔲 PENDING | - | phase-3-integration | - | - | - |
+
+### 3.3 File Conflict Detection
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P3-011 | Create file lock tracking table | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-012 | Implement file lock acquisition | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-013 | Implement file lock release | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-014 | Add conflict detection before dispatch | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-015 | Write unit tests for file locking | 🔲 PENDING | - | phase-3-integration | - | - | - |
+
+### 3.4 Merge Coordinator
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P3-016 | Create merge coordinator service | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-017 | Implement merge queue logic | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-018 | Add automatic merge attempt | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-019 | Implement conflict escalation to architect | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-020 | Write integration tests for merge coordinator | 🔲 PENDING | - | phase-3-integration | - | - | - |
+
+### 3.5 Parallel Group Scheduling
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P3-021 | Implement parallel group detection | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-022 | Add group-aware task selection | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-023 | Implement group completion barrier | 🔲 PENDING | - | phase-3-integration | - | - | - |
+| P3-024 | Write unit tests for parallel scheduling | 🔲 PENDING | - | phase-3-integration | - | - | - |
+
+### Phase 3 Summary
+
+| Section | Tasks | Status |
+|---------|-------|--------|
+| 3.1 Git Worktree Management | 5 | 🔲 PENDING |
+| 3.2 Multi-Worker Dispatcher | 5 | 🔲 PENDING |
+| 3.3 File Conflict Detection | 5 | 🔲 PENDING |
+| 3.4 Merge Coordinator | 5 | 🔲 PENDING |
+| 3.5 Parallel Group Scheduling | 4 | 🔲 PENDING |
+| **Total** | **24** | **0/24 DONE** |
+
+### Phase 3 Sign-off Checklist
+
+- [ ] All 24 tasks completed
 - [ ] All specialist reviews passed
 - [ ] All findings resolved
 - [ ] All tests passing
