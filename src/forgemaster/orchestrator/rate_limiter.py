@@ -170,37 +170,36 @@ class TokenBucket:
                 )
                 return 0.0
 
-            # Calculate wait time for tokens to refill
-            tokens_needed = tokens - self._tokens
-            wait_time = tokens_needed / self._rate
+        # Calculate wait time for tokens to refill
+        tokens_needed = tokens - self._tokens
+        wait_time = tokens_needed / self._rate
 
-            logger.info(
-                "waiting_for_tokens",
-                tokens_needed=tokens_needed,
-                wait_time=wait_time,
-            )
+        logger.info(
+            "waiting_for_tokens",
+            tokens_needed=tokens_needed,
+            wait_time=wait_time,
+        )
 
-            # Wait outside the lock to allow other operations
-            async with self._lock:
-                self._refill()
+        await asyncio.sleep(wait_time)
 
-            await asyncio.sleep(wait_time)
+        async with self._lock:
+            self._refill()
+            self._tokens -= tokens
 
-            async with self._lock:
-                self._refill()
-                self._tokens -= tokens
+        logger.debug(
+            "tokens_acquired_after_wait",
+            tokens=tokens,
+            remaining=self._tokens,
+            wait_time=wait_time,
+        )
 
-            logger.debug(
-                "tokens_acquired_after_wait",
-                tokens=tokens,
-                remaining=self._tokens,
-                wait_time=wait_time,
-            )
-
-            return wait_time
+        return wait_time
 
     def try_acquire(self, tokens: float = 1.0) -> bool:
         """Try to acquire tokens without waiting.
+
+        Note: This method is not async-safe. For concurrent scenarios, use the async
+        `acquire()` method instead.
 
         Args:
             tokens: Number of tokens to acquire
@@ -311,9 +310,7 @@ class RateLimitHandler:
         # Parse Anthropic-specific headers
         if "anthropic-ratelimit-requests-remaining" in headers_lower:
             try:
-                rate_limit_remaining = int(
-                    headers_lower["anthropic-ratelimit-requests-remaining"]
-                )
+                rate_limit_remaining = int(headers_lower["anthropic-ratelimit-requests-remaining"])
             except ValueError:
                 pass
 
@@ -395,7 +392,6 @@ class ExponentialBackoff:
             config: Backoff configuration
         """
         self._config = config
-        self._attempt = 0
 
         logger.info(
             "exponential_backoff_initialized",
@@ -460,11 +456,6 @@ class ExponentialBackoff:
         )
 
         return delay
-
-    def reset(self) -> None:
-        """Reset attempt counter."""
-        self._attempt = 0
-        logger.debug("backoff_reset")
 
 
 class AdaptiveThrottler:

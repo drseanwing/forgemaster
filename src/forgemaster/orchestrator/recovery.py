@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-from datetime import UTC, datetime, timedelta
+import uuid
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import TYPE_CHECKING
 
@@ -211,7 +212,7 @@ class OrphanDetector:
             List of OrphanSession instances describing each orphan.
         """
         orphans: list[OrphanSession] = []
-        now = datetime.now(UTC)
+        now = datetime.now(timezone.utc)
 
         async with self.session_factory() as db_session:
             # 1. Detect running sessions that have timed out
@@ -539,13 +540,11 @@ class SessionCleaner:
         from sqlalchemy import update as sa_update
 
         async with self.session_factory() as db_session:
-            import uuid as uuid_mod
-
-            now = datetime.now(UTC)
+            now = datetime.now(timezone.utc)
             stmt = (
                 sa_update(FileLock)
                 .where(
-                    FileLock.task_id == uuid_mod.UUID(task_id),
+                    FileLock.task_id == uuid.UUID(task_id),
                     FileLock.released_at.is_(None),
                 )
                 .values(released_at=now)
@@ -576,9 +575,7 @@ class SessionCleaner:
         Returns:
             The new task status as a string.
         """
-        import uuid as uuid_mod
-
-        task_uuid = uuid_mod.UUID(task_id)
+        task_uuid = uuid.UUID(task_id)
 
         async with self.session_factory() as db_session:
             task = await get_task(db_session, task_uuid)
@@ -649,9 +646,7 @@ class RetryScheduler:
         Returns:
             RetryDecision with the evaluation result.
         """
-        import uuid as uuid_mod
-
-        task_uuid = uuid_mod.UUID(task_id)
+        task_uuid = uuid.UUID(task_id)
 
         async with self.session_factory() as db_session:
             task = await get_task(db_session, task_uuid)
@@ -701,10 +696,8 @@ class RetryScheduler:
         Returns:
             RetryDecision with the scheduling result.
         """
-        import uuid as uuid_mod
-
         decision = await self.evaluate_retry(task_id)
-        task_uuid = uuid_mod.UUID(task_id)
+        task_uuid = uuid.UUID(task_id)
 
         if decision.should_retry:
             # Apply backoff delay
@@ -796,7 +789,7 @@ class RecoveryManager:
         Returns:
             RecoveryReport summarising all recovery actions taken.
         """
-        started_at = datetime.now(UTC)
+        started_at = datetime.now(timezone.utc)
         self._logger.info("startup_recovery_started")
 
         report = RecoveryReport(started_at=started_at.isoformat())
@@ -829,7 +822,7 @@ class RecoveryManager:
                 report.tasks_failed += 1
 
         # Step 6: Complete report
-        completed_at = datetime.now(UTC)
+        completed_at = datetime.now(timezone.utc)
         report.completed_at = completed_at.isoformat()
         report.duration_seconds = (completed_at - started_at).total_seconds()
 
@@ -907,7 +900,7 @@ class RecoveryManager:
 # ---------------------------------------------------------------------------
 
 
-def _to_uuid(value: str) -> object:
+def _to_uuid(value: str) -> uuid.UUID:
     """Convert a string to a UUID object.
 
     Args:
@@ -916,6 +909,4 @@ def _to_uuid(value: str) -> object:
     Returns:
         UUID object.
     """
-    import uuid as uuid_mod
-
-    return uuid_mod.UUID(value)
+    return uuid.UUID(value)

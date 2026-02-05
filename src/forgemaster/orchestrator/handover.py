@@ -17,7 +17,7 @@ Flow:
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
@@ -25,6 +25,10 @@ import structlog
 from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from sqlalchemy.ext.asyncio import AsyncSession
+
     from forgemaster.agents.session import AgentSessionManager, SessionInfo
 
 from forgemaster.config import AgentConfig
@@ -78,7 +82,7 @@ class HandoverTrigger(BaseModel):
     trigger_reason: HandoverReason
     token_usage_ratio: float = Field(ge=0.0, le=1.0)
     estimated_remaining_tokens: int = Field(ge=0)
-    triggered_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
+    triggered_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 class SaveExitResponse(BaseModel):
@@ -129,7 +133,7 @@ class HandoverContext(BaseModel):
     task_status_snapshot: str = Field(default="in_progress")
     branch_name: str | None = None
     worktree_path: str | None = None
-    created_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     continuation_session_id: str | None = None
 
 
@@ -408,7 +412,7 @@ class HandoverStore:
             for future database persistence).
     """
 
-    def __init__(self, session_factory: Any = None) -> None:
+    def __init__(self, session_factory: Callable[[], AsyncSession] | None = None) -> None:
         """Initialise the handover store.
 
         Args:
