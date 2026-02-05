@@ -588,3 +588,64 @@ git push origin {BRANCH_NAME}
 | P4-042 | Add file overlap search | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
 | P4-043 | Implement result merging algorithm | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
 | P4-044 | Write unit tests for context search | 🔵 IN PROGRESS | tester | phase-4-integration | 2026-02-05 | | |
+
+---
+
+## Phase 5: Build/Deploy Pipeline
+
+### 5.1 Docker Build System
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P5-001 | Create docker-py wrapper module | 🔵 IN PROGRESS | executor | phase-5-integration | 2026-02-05 | | |
+| P5-002 | Implement image build function | 🔵 IN PROGRESS | executor | phase-5-integration | 2026-02-05 | | |
+| P5-003 | Add rootless Docker compatibility checks | 🔵 IN PROGRESS | executor | phase-5-integration | 2026-02-05 | | |
+| P5-004 | Implement build log streaming | 🔵 IN PROGRESS | executor | phase-5-integration | 2026-02-05 | | |
+| P5-005 | Write integration tests for Docker build | 🔵 IN PROGRESS | tester | phase-5-integration | 2026-02-05 | | |
+
+### 5.2 Image Tagging
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P5-006 | Implement git SHA tagging | 🔵 IN PROGRESS | executor | phase-5-integration | 2026-02-05 | | |
+| P5-007 | Add semantic version tagging | 🔵 IN PROGRESS | executor | phase-5-integration | 2026-02-05 | | |
+| P5-008 | Implement latest tag management | 🔵 IN PROGRESS | executor | phase-5-integration | 2026-02-05 | | |
+
+### 5.3 Registry Operations
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P5-009 | Implement registry authentication | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-010 | Implement image push function | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-011 | Add push retry logic | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-012 | Write integration tests for registry operations | ⬜ PENDING | tester | phase-5-integration | | | |
+
+### 5.4 Container Management
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P5-013 | Implement container stop function | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-014 | Implement container start function | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-015 | Add compose service restart | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-016 | Write integration tests for container management | ⬜ PENDING | tester | phase-5-integration | | | |
+
+### 5.5 Health Check System
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P5-017 | Implement health endpoint poller | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-018 | Add health check timeout handling | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-019 | Implement rollback trigger logic | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-020 | Add rollback execution function | ⬜ PENDING | executor | phase-5-integration | | | |
+| P5-021 | Write integration tests for health check system | ⬜ PENDING | tester | phase-5-integration | | | |
+
+### Phase 5 Summary
+
+| Section | Tasks | Status |
+|---------|-------|--------|
+| 5.1 Docker Build System | 5 | 🔵 IN PROGRESS |
+| 5.2 Image Tagging | 3 | 🔵 IN PROGRESS |
+| 5.3 Registry Operations | 4 | ⬜ PENDING |
+| 5.4 Container Management | 4 | ⬜ PENDING |
+| 5.5 Health Check System | 5 | ⬜ PENDING |
+| **Total** | **21** | **0/21 DONE** |
