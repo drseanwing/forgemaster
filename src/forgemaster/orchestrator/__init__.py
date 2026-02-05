@@ -1,8 +1,8 @@
 """Orchestrator subsystem for Forgemaster.
 
 This module implements the task dispatcher, state machine, session health
-monitor, file conflict detection, parallel group scheduling, and parallel
-worker coordination logic.
+monitor, file conflict detection, parallel group scheduling, parallel
+worker coordination, and merge coordination logic.
 """
 
 from forgemaster.orchestrator.dispatcher import (
@@ -13,6 +13,11 @@ from forgemaster.orchestrator.dispatcher import (
 )
 from forgemaster.orchestrator.file_locker import FileLocker, LockConflict
 from forgemaster.orchestrator.health_monitor import HealthMonitor
+from forgemaster.orchestrator.merge_coordinator import (
+    MergeCoordinator,
+    MergeRequest,
+    MergeStatus,
+)
 from forgemaster.orchestrator.result_handler import ResultHandler
 from forgemaster.orchestrator.scheduler import (
     GroupStatus,
@@ -33,6 +38,9 @@ __all__ = [
     "HealthMonitor",
     "InvalidTransitionError",
     "LockConflict",
+    "MergeCoordinator",
+    "MergeRequest",
+    "MergeStatus",
     "MultiWorkerDispatcher",
     "ParallelGroupScheduler",
     "ResultHandler",
