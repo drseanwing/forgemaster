@@ -2,7 +2,7 @@
 
 This module implements the task dispatcher, state machine, session health
 monitor, file conflict detection, parallel group scheduling, parallel
-worker coordination, and merge coordination logic.
+worker coordination, merge coordination, and session handover logic.
 """
 
 from forgemaster.orchestrator.dispatcher import (
@@ -12,6 +12,16 @@ from forgemaster.orchestrator.dispatcher import (
     WorkerState,
 )
 from forgemaster.orchestrator.file_locker import FileLocker, LockConflict
+from forgemaster.orchestrator.handover import (
+    ContextExhaustionDetector,
+    HandoverContext,
+    HandoverPromptGenerator,
+    HandoverReason,
+    HandoverStore,
+    HandoverTrigger,
+    SaveExitResponse,
+    SessionHandoverManager,
+)
 from forgemaster.orchestrator.health_monitor import HealthMonitor
 from forgemaster.orchestrator.merge_coordinator import (
     MergeCoordinator,
@@ -25,16 +35,22 @@ from forgemaster.orchestrator.scheduler import (
     ScheduledGroup,
 )
 from forgemaster.orchestrator.state_machine import (
+    VALID_TRANSITIONS,
     InvalidTransitionError,
     TaskStateMachine,
-    VALID_TRANSITIONS,
     validate_transition,
 )
 
 __all__ = [
+    "ContextExhaustionDetector",
     "Dispatcher",
     "FileLocker",
     "GroupStatus",
+    "HandoverContext",
+    "HandoverPromptGenerator",
+    "HandoverReason",
+    "HandoverStore",
+    "HandoverTrigger",
     "HealthMonitor",
     "InvalidTransitionError",
     "LockConflict",
@@ -44,7 +60,9 @@ __all__ = [
     "MultiWorkerDispatcher",
     "ParallelGroupScheduler",
     "ResultHandler",
+    "SaveExitResponse",
     "ScheduledGroup",
+    "SessionHandoverManager",
     "TaskStateMachine",
     "VALID_TRANSITIONS",
     "WorkerSlot",
