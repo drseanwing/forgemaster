@@ -29,7 +29,7 @@ from forgemaster.database.models.task import Task, TaskStatus
 logger = structlog.get_logger(__name__)
 
 # Type alias matching the project's convention (see dispatcher.py)
-SessionFactory = Callable[..., Any]
+SessionFactory = Callable[[], AsyncSession]
 
 
 # ---------------------------------------------------------------------------
@@ -943,6 +943,7 @@ class ReviewCycleOrchestrator:
         if cycle is None:
             raise ValueError(f"Review cycle {cycle_id} not found")
 
+        previous_state = cycle.state
         self._transition(cycle, ReviewCycleState.FAILED)
         cycle.completed_at = datetime.now(timezone.utc)
 
@@ -950,7 +951,7 @@ class ReviewCycleOrchestrator:
             "review_cycle_failed",
             cycle_id=cycle_id,
             reason=reason,
-            state_at_failure=cycle.state.value,
+            state_at_failure=previous_state.value,
         )
 
         return cycle

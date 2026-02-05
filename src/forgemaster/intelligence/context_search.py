@@ -44,9 +44,9 @@ SessionFactory = Callable[[], AsyncSession]
 
 # Default strategy weights for result merging
 DEFAULT_WEIGHTS: dict[SearchStrategy, float] = {
-    "semantic": 0.40,
-    "keyword": 0.35,
-    "file_overlap": 0.25,
+    SearchStrategy.SEMANTIC: 0.40,
+    SearchStrategy.KEYWORD: 0.35,
+    SearchStrategy.FILE_OVERLAP: 0.25,
 }
 
 # Verification bonus added to verified lesson scores

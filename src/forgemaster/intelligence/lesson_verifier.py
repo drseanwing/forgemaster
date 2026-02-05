@@ -189,11 +189,8 @@ class LessonVerifier:
         Returns:
             A ``TestDiscoveryResult`` describing what was found.
         """
-        session = self.session_factory()
-        try:
+        async with self.session_factory() as session:
             lesson = await self._get_lesson(session, lesson_id)
-        finally:
-            await session.close()
 
         if lesson is None:
             logger.warning("lesson_not_found_for_discovery", lesson_id=lesson_id)
@@ -770,8 +767,7 @@ class LessonVerifier:
         Returns:
             List of ``VerificationResult`` for each processed lesson.
         """
-        session = self.session_factory()
-        try:
+        async with self.session_factory() as session:
             stmt = (
                 select(LessonLearned)
                 .where(LessonLearned.project_id == uuid.UUID(project_id))
@@ -784,8 +780,6 @@ class LessonVerifier:
             )
             result = await session.execute(stmt)
             lessons = list(result.scalars().all())
-        finally:
-            await session.close()
 
         logger.info(
             "verify_all_pending_started",
@@ -829,8 +823,7 @@ class LessonVerifier:
         Raises:
             ValueError: If the lesson does not exist.
         """
-        session = self.session_factory()
-        try:
+        async with self.session_factory() as session:
             lesson = await self._get_lesson(session, lesson_id)
             if lesson is None:
                 raise ValueError(f"Lesson {lesson_id} not found")
@@ -854,8 +847,6 @@ class LessonVerifier:
                 status=status.value,
                 confidence_score=confidence_score,
             )
-        finally:
-            await session.close()
 
     # ------------------------------------------------------------------
     # Utility helpers

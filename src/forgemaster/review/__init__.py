@@ -10,6 +10,8 @@ tasks, checking for security issues, architectural consistency, spec
 compliance, and code quality.
 """
 
+from __future__ import annotations
+
 from forgemaster.review.consolidator import (
     ConsolidatedFinding,
     FindingConsolidator,
