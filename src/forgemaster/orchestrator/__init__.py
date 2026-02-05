@@ -2,8 +2,11 @@
 
 This module implements the task dispatcher, state machine, session health
 monitor, file conflict detection, parallel group scheduling, parallel
-worker coordination, merge coordination, and session handover logic.
+worker coordination, merge coordination, session handover, crash recovery,
+idle watchdog, and API rate limiting logic.
 """
+
+from __future__ import annotations
 
 from forgemaster.orchestrator.dispatcher import (
     Dispatcher,
@@ -28,6 +31,29 @@ from forgemaster.orchestrator.merge_coordinator import (
     MergeRequest,
     MergeStatus,
 )
+from forgemaster.orchestrator.rate_limiter import (
+    AdaptiveThrottler,
+    BackoffConfig,
+    ExponentialBackoff,
+    ParallelismReduction,
+    RateLimitConfig,
+    RateLimitHandler,
+    RateLimitResponse,
+    RateLimitState,
+    TokenBucket,
+)
+from forgemaster.orchestrator.recovery import (
+    CleanupAction,
+    CleanupResult,
+    OrphanDetector,
+    OrphanReason,
+    OrphanSession,
+    RecoveryManager,
+    RecoveryReport,
+    RetryDecision,
+    SessionCleaner,
+    RetryScheduler,
+)
 from forgemaster.orchestrator.result_handler import ResultHandler
 from forgemaster.orchestrator.scheduler import (
     GroupStatus,
@@ -40,32 +66,82 @@ from forgemaster.orchestrator.state_machine import (
     TaskStateMachine,
     validate_transition,
 )
+from forgemaster.orchestrator.watchdog import (
+    ActivityRecord,
+    ActivityTracker,
+    ActivityType,
+    IdleDetector,
+    IdleSeverity,
+    IdleSession,
+    IdleWatchdog,
+    WatchdogAction,
+    WatchdogActionType,
+)
 
 __all__ = [
-    "ContextExhaustionDetector",
+    # Dispatcher
     "Dispatcher",
+    "MultiWorkerDispatcher",
+    "WorkerSlot",
+    "WorkerState",
+    # File locking
     "FileLocker",
-    "GroupStatus",
+    "LockConflict",
+    # Session handover
+    "ContextExhaustionDetector",
     "HandoverContext",
     "HandoverPromptGenerator",
     "HandoverReason",
     "HandoverStore",
     "HandoverTrigger",
+    "SaveExitResponse",
+    "SessionHandoverManager",
+    # Health monitor
     "HealthMonitor",
-    "InvalidTransitionError",
-    "LockConflict",
+    # Merge coordinator
     "MergeCoordinator",
     "MergeRequest",
     "MergeStatus",
-    "MultiWorkerDispatcher",
-    "ParallelGroupScheduler",
+    # Rate limiter
+    "AdaptiveThrottler",
+    "BackoffConfig",
+    "ExponentialBackoff",
+    "ParallelismReduction",
+    "RateLimitConfig",
+    "RateLimitHandler",
+    "RateLimitResponse",
+    "RateLimitState",
+    "TokenBucket",
+    # Crash recovery
+    "CleanupAction",
+    "CleanupResult",
+    "OrphanDetector",
+    "OrphanReason",
+    "OrphanSession",
+    "RecoveryManager",
+    "RecoveryReport",
+    "RetryDecision",
+    "RetryScheduler",
+    "SessionCleaner",
+    # Result handler
     "ResultHandler",
-    "SaveExitResponse",
+    # Scheduler
+    "GroupStatus",
+    "ParallelGroupScheduler",
     "ScheduledGroup",
-    "SessionHandoverManager",
+    # State machine
+    "InvalidTransitionError",
     "TaskStateMachine",
     "VALID_TRANSITIONS",
-    "WorkerSlot",
-    "WorkerState",
     "validate_transition",
+    # Watchdog
+    "ActivityRecord",
+    "ActivityTracker",
+    "ActivityType",
+    "IdleDetector",
+    "IdleSeverity",
+    "IdleSession",
+    "IdleWatchdog",
+    "WatchdogAction",
+    "WatchdogActionType",
 ]
