@@ -1,13 +1,14 @@
 """SQLAlchemy ORM models for Forgemaster.
 
 This module defines the database schema including projects, tasks, agent
-sessions, lessons learned, and embedding queue tables.
+sessions, lessons learned, embedding queue, and file lock tables.
 
 All models use SQLAlchemy 2.0 declarative style with Mapped[] type annotations.
 """
 
 from forgemaster.database.models.base import Base, TimestampMixin
 from forgemaster.database.models.embedding import EmbeddingQueueItem
+from forgemaster.database.models.file_lock import FileLock, LockType
 from forgemaster.database.models.lesson import LessonLearned
 from forgemaster.database.models.project import Project, ProjectStatus
 from forgemaster.database.models.session import AgentSession, SessionStatus
@@ -24,4 +25,6 @@ __all__ = [
     "SessionStatus",
     "LessonLearned",
     "EmbeddingQueueItem",
+    "FileLock",
+    "LockType",
 ]
