@@ -3,24 +3,53 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      target: runtime
+    image: forgemaster:latest
     container_name: forgemaster-orchestrator
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
       ollama:
-        condition: service_started
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+asyncpg://forgemaster:${POSTGRES_PASSWORD}@postgres:5432/forgemaster
+      # Database configuration
+      DATABASE_URL: postgresql+asyncpg://forgemaster:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}@postgres:5432/forgemaster
+
+      # Ollama configuration
       OLLAMA_URL: http://ollama:11434
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+
+      # Logging
       LOG_LEVEL: INFO
+      LOG_FORMAT: json
+
+      # Application settings
+      FORGEMASTER_ENV: production
+
     ports:
       - "8000:8000"
     volumes:
       - forgemaster-logs:/app/logs
       - forgemaster-context:/app/context
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - forgemaster
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -28,22 +57,33 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: forgemaster
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
       POSTGRES_DB: forgemaster
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
       - forgemaster-db:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U forgemaster"]
+      test: ["CMD-SHELL", "pg_isready -U forgemaster -d forgemaster"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     networks:
       - forgemaster
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.1.26
     container_name: forgemaster-ollama
     restart: unless-stopped
     ports:
@@ -52,12 +92,49 @@ services:
       - forgemaster-ollama:/root/.ollama
     networks:
       - forgemaster
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+  # Init container to pull Ollama model
+  ollama-init:
+    image: ollama/ollama:0.1.26
+    container_name: forgemaster-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - forgemaster
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: >
+      sh -c "
+        echo 'Pulling nomic-embed-text model...' &&
+        ollama pull nomic-embed-text &&
+        echo 'Model pull complete'
+      "
+    restart: "no"
 
 volumes:
   forgemaster-db:
+    driver: local
   forgemaster-logs:
+    driver: local
   forgemaster-context:
+    driver: local
   forgemaster-ollama:
+    driver: local
 
 networks:
   forgemaster:
