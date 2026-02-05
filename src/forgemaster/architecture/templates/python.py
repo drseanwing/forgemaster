@@ -41,7 +41,6 @@ def get_python_template() -> ProjectTemplate:
     # Define config files
     config_files = {
         "pyproject.toml": _get_pyproject_template(),
-        "uv.lock": "",
     }
 
     return ProjectTemplate(
@@ -253,9 +252,6 @@ dmypy.json
 # OS
 .DS_Store
 Thumbs.db
-
-# uv
-uv.lock
 '''
 
 

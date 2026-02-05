@@ -8,11 +8,10 @@ evaluate technology choices, and produce comprehensive architecture documents.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field
 
 
-@dataclass(frozen=True)
-class ArchitectConfig:
+class ArchitectConfig(BaseModel):
     """Configuration for architect agent.
 
     The architect agent specializes in system design, architectural patterns,
@@ -30,15 +29,15 @@ class ArchitectConfig:
         output_format: Expected output structure (architecture_document)
     """
 
-    agent_type: str = "architect"
-    model: str = "claude-opus-4-5-20251101"
-    tools: list[str] = field(
-        default_factory=lambda: ["Read", "Write", "Bash", "Grep", "Glob"]
+    agent_type: str = Field(default="architect")
+    model: str = Field(default="claude-opus-4-5-20251101")
+    tools: list[str] = Field(
+        default=["Read", "Write", "Bash", "Grep", "Glob"]
     )
-    max_tokens: int = 16384
-    temperature: float = 0.3
-    purpose: str = "System architecture design and technical decision-making"
-    output_format: str = "architecture_document"
+    max_tokens: int = Field(default=16384)
+    temperature: float = Field(default=0.3)
+    purpose: str = Field(default="System architecture design and technical decision-making")
+    output_format: str = Field(default="architecture_document")
 
 
 def get_architect_config() -> ArchitectConfig:

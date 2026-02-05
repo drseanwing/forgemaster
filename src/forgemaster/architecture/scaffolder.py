@@ -7,6 +7,7 @@ It supports multiple languages and frameworks through a template registry system
 
 from __future__ import annotations
 
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -86,7 +87,7 @@ class TemplateRegistry:
             >>> registry.register_template("python-basic", template)
         """
         self.logger.info("registering_template", name=name, language=template.language)
-        self._templates[name] = template
+        self._templates[name.lower()] = template
 
     def get_template(self, language: str) -> ProjectTemplate:
         """Get template for specified language.
@@ -105,13 +106,15 @@ class TemplateRegistry:
             >>> print(template.name)
             'python-basic'
         """
-        # Try exact match first
-        if language in self._templates:
-            return self._templates[language]
+        language_lower = language.lower()
+
+        # Try exact match first (normalized)
+        if language_lower in self._templates:
+            return self._templates[language_lower]
 
         # Try language-based lookup
         for name, template in self._templates.items():
-            if template.language.lower() == language.lower():
+            if template.language.lower() == language_lower:
                 return template
 
         raise ValueError(f"No template found for language: {language}")
@@ -669,8 +672,6 @@ class RepositoryScaffolder:
         Returns:
             Version string (e.g., "3.12")
         """
-        import re
-
         match = re.search(r"(\d+\.\d+)", runtime)
         if match:
             return match.group(1)

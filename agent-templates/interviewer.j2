@@ -39,7 +39,7 @@ Your questions should be:
 {{ project_requirements|default("No additional context provided.") }}
 {% endblock %}
 
-{% block interview_protocol %}
+{% block context %}
 ## Interview Protocol
 
 ### Question Generation Process
@@ -68,7 +68,7 @@ After receiving answers:
 - Track remaining unknowns
 {% endblock %}
 
-{% block output_format %}
+{% block standards %}
 ## Required Output Format
 
 Your response MUST be valid JSON matching this schema:

@@ -114,14 +114,14 @@ class ClarifiedSpec(BaseModel):
 
     Attributes:
         original_spec: The original specification document
-        clarifications: Map of topics to clarifications
+        clarifications: Map of topics to clarifications (can be single string or list)
         resolved_ambiguities: List of ambiguities that were resolved
         remaining_unknowns: List of items still unclear
         interview_rounds: Number of interview rounds conducted
     """
 
     original_spec: SpecDocument
-    clarifications: dict[str, str] = Field(
+    clarifications: dict[str, str | list[str]] = Field(
         default_factory=dict, description="Topic to clarification mapping"
     )
     resolved_ambiguities: list[str] = Field(
@@ -204,18 +204,6 @@ class InterviewOrchestrator:
                         context=f"Section '{section.heading}' is empty",
                     )
                 )
-
-        # Check for technology constraints
-        if "technology" not in section_headings:
-            questions.append(
-                InterviewQuestion(
-                    id=f"Q{len(questions) + 1}",
-                    question="What are the technology stack requirements and constraints?",
-                    category=QuestionCategory.TECHNICAL,
-                    importance=QuestionImportance.HIGH,
-                    context="No technology constraints specified",
-                )
-            )
 
         # Check for deployment requirements
         if "deployment" not in section_headings and "infrastructure" not in section_headings:
@@ -313,7 +301,7 @@ class InterviewSession:
         self.orchestrator = orchestrator
         self.max_rounds = max_rounds
         self._rounds: list[InterviewRoundResult] = []
-        self._clarifications: dict[str, str] = {}
+        self._clarifications: dict[str, list[str]] = {}
         self._logger = structlog.get_logger(__name__)
 
     def start_interview(
@@ -371,8 +359,15 @@ class InterviewSession:
             )
             if question:
                 topic = question.category.value
-                self._clarifications[topic] = response.answer
-                current_round.clarifications_gained[topic] = response.answer
+                # Accumulate answers by category
+                if topic not in self._clarifications:
+                    self._clarifications[topic] = []
+                self._clarifications[topic].append(response.answer)
+
+                # Store in round result (join for display)
+                current_round.clarifications_gained[topic] = "; ".join(
+                    self._clarifications[topic]
+                )
 
         # Track remaining gaps (responses that need follow-up)
         for response in responses:
@@ -425,13 +420,18 @@ class InterviewSession:
                     None,
                 )
                 if question:
+                    answer_preview = (
+                        response.answer[:50] + "..."
+                        if len(response.answer) > 50
+                        else response.answer
+                    )
                     follow_ups.append(
                         InterviewQuestion(
                             id=f"Q{len(follow_ups) + 1}",
                             question=f"Can you provide more detail about: {question.question}",
                             category=question.category,
                             importance=question.importance,
-                            context=f"Follow-up to incomplete answer: {response.answer[:50]}...",
+                            context=f"Follow-up to incomplete answer: {answer_preview}",
                         )
                     )
 

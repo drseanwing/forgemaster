@@ -6,11 +6,10 @@ for specification clarification and requirements gathering through structured Q&
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class InterviewerConfig:
+class InterviewerConfig(BaseModel):
     """Configuration for the interviewer agent.
 
     The interviewer agent conducts structured interviews to clarify specifications,
@@ -27,14 +26,14 @@ class InterviewerConfig:
         max_rounds: Maximum interview rounds before finalization
     """
 
-    agent_type: str = "interviewer"
-    model: str = "claude-opus-4-5-20251101"
-    tools: list[str] = field(default_factory=lambda: ["Read"])
-    max_tokens: int = 8192
-    temperature: float = 0.7
-    purpose: str = "Specification clarification and requirements gathering"
-    max_questions: int = 10
-    max_rounds: int = 3
+    agent_type: str = Field(default="interviewer")
+    model: str = Field(default="claude-opus-4-5-20251101")
+    tools: list[str] = Field(default=["Read"])
+    max_tokens: int = Field(default=8192)
+    temperature: float = Field(default=0.7)
+    purpose: str = Field(default="Specification clarification and requirements gathering")
+    max_questions: int = Field(default=10)
+    max_rounds: int = Field(default=3)
 
 
 def get_interviewer_config() -> InterviewerConfig:

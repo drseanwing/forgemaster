@@ -65,7 +65,8 @@ export async function main(): Promise<void> {
   console.log("Hello from {{PROJECT_NAME}}!");
 }
 
-// Run if executed directly
+// Run if executed directly (CommonJS)
+// Note: This uses CommonJS module pattern as configured in tsconfig.json
 if (require.main === module) {
   main().catch((error) => {
     console.error("Error:", error);
