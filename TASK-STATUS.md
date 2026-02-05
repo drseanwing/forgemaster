@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Last Updated:** 2026-02-05T00:00:00Z
-**Current Phase:** 3 - Parallelisation
+**Current Phase:** 4 - Review Cycles + Intelligence
 
 ---
 
@@ -510,3 +510,81 @@ git push origin {BRANCH_NAME}
 ---
 
 *This document is the single source of truth for task status. Keep it updated.*
+
+---
+
+## Phase 4: Review Cycles + Intelligence
+
+### 4.1 Review Cycle Orchestration
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P4-001 | Create review cycle state machine | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-002 | Implement review trigger logic | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-003 | Add review task generation | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-004 | Implement review result aggregation | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-005 | Write unit tests for review cycle | 🔵 IN PROGRESS | tester | phase-4-integration | 2026-02-05 | | |
+
+### 4.2 Specialist Reviewer Agents
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P4-006 | Create frontend reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-007 | Create backend reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-008 | Create database reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-009 | Create spec compliance reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-010 | Create security reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-011 | Create accessibility reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-012 | Create integration reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-013 | Create dependency reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-014 | Create Docker/infra reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-015 | Create SCM/CI reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-016 | Create error handling reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+| P4-017 | Create documentation reviewer agent definition | ⬜ PENDING | architect | phase-4-integration | | | |
+
+### 4.3 Reviewer Prompt Templates
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P4-018 | Write frontend reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-019 | Write backend reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-020 | Write database reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-021 | Write spec compliance reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-022 | Write security reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-023 | Write accessibility reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-024 | Write integration reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-025 | Write dependency reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-026 | Write Docker/infra reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-027 | Write SCM/CI reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-028 | Write error handling reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-029 | Write documentation reviewer prompt template | ⬜ PENDING | executor | phase-4-integration | | | |
+
+### 4.4 Finding Consolidation
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P4-030 | Create finding deduplication logic | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-031 | Implement finding severity ranking | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-032 | Add fix task generation from findings | ⬜ PENDING | executor | phase-4-integration | | | |
+| P4-033 | Write unit tests for finding consolidation | ⬜ PENDING | tester | phase-4-integration | | | |
+
+### 4.5 Lesson Verification Protocol
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P4-034 | Implement lesson test discovery | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-035 | Add pre-fix test execution | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-036 | Add post-fix test execution | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-037 | Implement verification status update | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-038 | Write integration tests for lesson verification | 🔵 IN PROGRESS | tester | phase-4-integration | 2026-02-05 | | |
+
+### 4.6 Semantic Context Pre-selection
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P4-039 | Implement dual search strategy | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-040 | Add semantic similarity search | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-041 | Add full-text keyword search | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-042 | Add file overlap search | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-043 | Implement result merging algorithm | 🔵 IN PROGRESS | executor | phase-4-integration | 2026-02-05 | | |
+| P4-044 | Write unit tests for context search | 🔵 IN PROGRESS | tester | phase-4-integration | 2026-02-05 | | |
