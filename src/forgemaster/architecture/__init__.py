@@ -8,20 +8,35 @@ The pipeline consists of:
 1. Specification ingestion (SpecParser)
 2. Validation and completeness checking (ValidationResult)
 3. Structured representation (SpecDocument, SpecSection)
-4. Architecture document generation (ArchitectureGenerator, TechnologyEvaluator)
-5. Component modeling (ComponentDefinition, InterfaceDefinition, etc.)
-6. Task decomposition and planning (TaskDecomposer, DependencyGraphGenerator, ParallelGroupAssigner)
+4. Interview orchestration (InterviewOrchestrator, InterviewSession)
+5. Architecture document generation (ArchitectureGenerator, TechnologyEvaluator)
+6. Component modeling (ComponentDefinition, InterfaceDefinition, etc.)
+7. Task decomposition and planning (TaskDecomposer, DependencyGraphGenerator, ParallelGroupAssigner)
 
 Example:
     ```python
-    from forgemaster.architecture import SpecParser, ArchitectureGenerator, TaskDecomposer
+    from forgemaster.architecture import (
+        SpecParser,
+        InterviewOrchestrator,
+        InterviewSession,
+        ArchitectureGenerator,
+        TaskDecomposer,
+    )
 
     parser = SpecParser()
     spec = parser.parse_file(Path("specification.md"))
     validation = parser.validate_spec(spec)
     if validation.is_valid:
+        # Conduct interview for clarification
+        orchestrator = InterviewOrchestrator()
+        session = InterviewSession(spec, orchestrator)
+        questions = session.start_interview()
+        # ... process responses and finalize
+        clarified = session.finalize_interview()
+
+        # Generate architecture
         generator = ArchitectureGenerator()
-        arch = generator.generate_architecture(spec)
+        arch = generator.generate_architecture(clarified.original_spec)
         decomposer = TaskDecomposer()
         plan = decomposer.decompose(arch)
         print(f"Generated {plan.total_tasks} tasks")
@@ -35,6 +50,14 @@ __all__ = [
     "SpecDocument",
     "SpecSection",
     "ValidationResult",
+    "InterviewOrchestrator",
+    "InterviewSession",
+    "InterviewQuestion",
+    "InterviewResponse",
+    "InterviewRoundResult",
+    "ClarifiedSpec",
+    "QuestionCategory",
+    "QuestionImportance",
     "ArchitectureGenerator",
     "TechnologyEvaluator",
     "ArchitectureDocument",
@@ -72,6 +95,16 @@ from forgemaster.architecture.architect import (
     TechnologyEvaluation,
     TechnologyEvaluator,
     TechnologyStack,
+)
+from forgemaster.architecture.interviewer import (
+    ClarifiedSpec,
+    InterviewOrchestrator,
+    InterviewQuestion,
+    InterviewResponse,
+    InterviewRoundResult,
+    InterviewSession,
+    QuestionCategory,
+    QuestionImportance,
 )
 from forgemaster.architecture.planner import (
     ComponentTasks,
