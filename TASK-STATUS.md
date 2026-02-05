@@ -649,3 +649,67 @@ git push origin {BRANCH_NAME}
 | 5.4 Container Management | 4 | ⬜ PENDING |
 | 5.5 Health Check System | 5 | ⬜ PENDING |
 | **Total** | **21** | **0/21 DONE** |
+
+---
+
+## Phase 6: Resilience Hardening
+
+### 6.1 Session Handover Protocol
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P6-001 | Implement context exhaustion detection | 🔵 IN PROGRESS | executor | phase-6-integration | 2026-02-05 | | |
+| P6-002 | Create save-and-exit prompt injection | 🔵 IN PROGRESS | executor | phase-6-integration | 2026-02-05 | | |
+| P6-003 | Implement handover context persistence | 🔵 IN PROGRESS | executor | phase-6-integration | 2026-02-05 | | |
+| P6-004 | Add continuation session spawning | 🔵 IN PROGRESS | executor | phase-6-integration | 2026-02-05 | | |
+| P6-005 | Write integration tests for session handover | 🔵 IN PROGRESS | tester | phase-6-integration | 2026-02-05 | | |
+
+### 6.2 Crash Recovery
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P6-006 | Implement orphan session detection | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-007 | Add session cleanup logic | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-008 | Implement task retry scheduling | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-009 | Add startup recovery routine | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-010 | Write integration tests for crash recovery | ⬜ PENDING | tester | phase-6-integration | | | |
+
+### 6.3 Idle Watchdog
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P6-011 | Implement activity timestamp tracking | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-012 | Add idle detection logic | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-013 | Implement watchdog kill action | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-014 | Write unit tests for idle watchdog | ⬜ PENDING | tester | phase-6-integration | | | |
+
+### 6.4 API Rate Limit Handling
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P6-015 | Implement token bucket rate limiter | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-016 | Add HTTP 429 response handler | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-017 | Implement exponential backoff | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-018 | Add adaptive parallelism reduction | ⬜ PENDING | executor | phase-6-integration | | | |
+| P6-019 | Write unit tests for rate limiter | ⬜ PENDING | tester | phase-6-integration | | | |
+
+### 6.5 E2E Test Suite
+
+| ID | Task | Status | Agent | Branch | Started | Completed | Reviewer |
+|----|------|--------|-------|--------|---------|-----------|----------|
+| P6-020 | Create E2E test fixtures | ⬜ PENDING | tester | phase-6-integration | | | |
+| P6-021 | Write full task lifecycle E2E test | ⬜ PENDING | tester | phase-6-integration | | | |
+| P6-022 | Write parallel execution E2E test | ⬜ PENDING | tester | phase-6-integration | | | |
+| P6-023 | Write review cycle E2E test | ⬜ PENDING | tester | phase-6-integration | | | |
+| P6-024 | Write resilience E2E test | ⬜ PENDING | tester | phase-6-integration | | | |
+
+### Phase 6 Summary
+
+| Section | Tasks | Status |
+|---------|-------|--------|
+| 6.1 Session Handover Protocol | 5 | 🔵 IN PROGRESS |
+| 6.2 Crash Recovery | 5 | ⬜ PENDING |
+| 6.3 Idle Watchdog | 4 | ⬜ PENDING |
+| 6.4 API Rate Limit Handling | 5 | ⬜ PENDING |
+| 6.5 E2E Test Suite | 5 | ⬜ PENDING |
+| **Total** | **24** | **0/24 DONE** |
