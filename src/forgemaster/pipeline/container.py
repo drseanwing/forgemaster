@@ -27,15 +27,15 @@ Example usage:
 from __future__ import annotations
 
 import asyncio
+import os
 import time
-from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 
-import docker
 from docker.errors import APIError, DockerException, NotFound
 from pydantic import BaseModel, Field
 
+import docker
 from forgemaster.config import DockerConfig
 from forgemaster.logging import get_logger
 
@@ -105,9 +105,7 @@ class ContainerInfo(BaseModel):
     image: str = Field(description="Image name")
     status: ContainerStatus = Field(description="Container status")
     health: str | None = Field(default=None, description="Health status")
-    ports: dict[str, str | None] = Field(
-        default_factory=dict, description="Port mappings"
-    )
+    ports: dict[str, str | None] = Field(default_factory=dict, description="Port mappings")
     created_at: str | None = Field(default=None, description="Creation timestamp")
     started_at: str | None = Field(default=None, description="Start timestamp")
 
@@ -127,9 +125,7 @@ class ComposeAction(BaseModel):
     success: bool = Field(description="Operation success flag")
     service_name: str = Field(description="Service name")
     action: str = Field(description="Action performed")
-    containers_affected: list[str] = Field(
-        default_factory=list, description="Affected containers"
-    )
+    containers_affected: list[str] = Field(default_factory=list, description="Affected containers")
     error: str | None = Field(default=None, description="Error message if failed")
     duration_seconds: float = Field(default=0.0, ge=0.0, description="Operation duration")
 
@@ -173,8 +169,6 @@ class ContainerManager:
         """
         if self._client is None:
             try:
-                import os
-
                 docker_host = os.environ.get("DOCKER_HOST")
                 if docker_host:
                     self._client = docker.DockerClient(base_url=docker_host)
@@ -209,9 +203,7 @@ class ContainerManager:
 
         return self._client
 
-    async def stop_container(
-        self, container_id: str, timeout: int = 30
-    ) -> ContainerAction:
+    async def stop_container(self, container_id: str, timeout: int = 30) -> ContainerAction:
         """Stop a running Docker container.
 
         Args:
@@ -238,7 +230,7 @@ class ContainerManager:
             previous_status = container.status
 
             # Already stopped?
-            if previous_status in ("stopped", "exited"):
+            if previous_status in (ContainerStatus.STOPPED.value, ContainerStatus.EXITED.value):
                 duration = time.monotonic() - start_time
                 self.logger.info(
                     "container_already_stopped",
@@ -368,7 +360,7 @@ class ContainerManager:
             previous_status = container.status
 
             # Already running?
-            if previous_status == "running":
+            if previous_status == ContainerStatus.RUNNING.value:
                 duration = time.monotonic() - start_time
                 self.logger.info(
                     "container_already_running",
@@ -456,9 +448,7 @@ class ContainerManager:
                 duration_seconds=duration,
             )
 
-    async def restart_container(
-        self, container_id: str, timeout: int = 30
-    ) -> ContainerAction:
+    async def restart_container(self, container_id: str, timeout: int = 30) -> ContainerAction:
         """Restart a Docker container.
 
         Args:
@@ -674,9 +664,7 @@ class ComposeManager:
             rootless=config.rootless,
         )
 
-    async def _run_compose_command(
-        self, *args: str, timeout: int = 60
-    ) -> tuple[bool, str, str]:
+    async def _run_compose_command(self, *args: str, timeout: int = 60) -> tuple[bool, str, str]:
         """Run a docker-compose command via subprocess.
 
         Args:
@@ -708,9 +696,7 @@ class ComposeManager:
                 stderr=asyncio.subprocess.PIPE,
             )
 
-            stdout_bytes, stderr_bytes = await asyncio.wait_for(
-                proc.communicate(), timeout=timeout
-            )
+            stdout_bytes, stderr_bytes = await asyncio.wait_for(proc.communicate(), timeout=timeout)
 
             stdout = stdout_bytes.decode("utf-8", errors="replace")
             stderr = stderr_bytes.decode("utf-8", errors="replace")
@@ -754,9 +740,7 @@ class ComposeManager:
             )
             return False, "", str(e)
 
-    async def restart_service(
-        self, service_name: str, timeout: int = 30
-    ) -> ComposeAction:
+    async def restart_service(self, service_name: str, timeout: int = 30) -> ComposeAction:
         """Restart a Docker Compose service.
 
         Args:
@@ -796,9 +780,7 @@ class ComposeManager:
             "ps", "-q", service_name, timeout=timeout
         )
 
-        containers_before = [
-            line.strip() for line in stdout.splitlines() if line.strip()
-        ]
+        containers_before = [line.strip() for line in stdout.splitlines() if line.strip()]
 
         # Restart the service
         success, stdout, stderr = await self._run_compose_command(
@@ -833,9 +815,7 @@ class ComposeManager:
             "ps", "-q", service_name, timeout=timeout
         )
 
-        containers_after = [
-            line.strip() for line in stdout_after.splitlines() if line.strip()
-        ]
+        containers_after = [line.strip() for line in stdout_after.splitlines() if line.strip()]
 
         containers_affected = list(set(containers_before + containers_after))
 
@@ -875,9 +855,7 @@ class ComposeManager:
             raise FileNotFoundError(f"Compose file not found: {self.compose_file}")
 
         # Get container IDs for the service
-        success, stdout, stderr = await self._run_compose_command(
-            "ps", "-q", service_name
-        )
+        success, stdout, stderr = await self._run_compose_command("ps", "-q", service_name)
 
         if not success:
             self.logger.warning(

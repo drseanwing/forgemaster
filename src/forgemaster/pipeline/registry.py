@@ -28,7 +28,7 @@ import re
 import time
 from enum import Enum
 
-from docker.errors import APIError, DockerException  # type: ignore[import-not-found]
+from docker.errors import APIError, DockerException
 from pydantic import BaseModel, Field
 
 import docker
@@ -37,6 +37,12 @@ from forgemaster.logging import get_logger
 
 # Regex pattern for extracting digest from push output
 _DIGEST_PATTERN = re.compile(r"digest:\s*(sha256:[a-f0-9]{64})")
+
+
+class PushError(Exception):
+    """Exception raised when a Docker push log entry contains an error."""
+
+    pass
 
 
 class PushStatus(str, Enum):
@@ -89,9 +95,7 @@ class RetryConfig(BaseModel):
     initial_delay_seconds: float = Field(
         default=5.0, ge=0.0, le=300.0, description="Initial retry delay"
     )
-    max_delay_seconds: float = Field(
-        default=60.0, ge=0.0, le=600.0, description="Max retry delay"
-    )
+    max_delay_seconds: float = Field(default=60.0, ge=0.0, le=600.0, description="Max retry delay")
     backoff_multiplier: float = Field(
         default=2.0, ge=1.0, le=10.0, description="Exponential backoff multiplier"
     )
@@ -144,7 +148,7 @@ class RegistryClient:
         """
         self.config = config
         self.logger = get_logger(__name__)
-        self._client: docker.DockerClient | None = None  # type: ignore[name-defined]
+        self._client: docker.DockerClient | None = None
         self._auth: RegistryAuth | None = auth
 
         self.logger.info(
@@ -153,7 +157,7 @@ class RegistryClient:
             has_auth=auth is not None,
         )
 
-    def _get_client(self) -> docker.DockerClient:  # type: ignore[name-defined]
+    def _get_client(self) -> docker.DockerClient:
         """Get or create the Docker client connection.
 
         Returns:
@@ -167,24 +171,23 @@ class RegistryClient:
                 # Determine Docker socket based on rootless mode
                 docker_host = os.environ.get("DOCKER_HOST")
                 if docker_host:
-                    self._client = docker.DockerClient(base_url=docker_host)  # type: ignore[attr-defined]
+                    self._client = docker.DockerClient(base_url=docker_host)
                 elif self.config.rootless:
-                    # Try rootless socket paths (Linux/Unix only)
+                    # Try rootless socket paths (Unix-like systems only)
                     try:
-                        import pwd
-                        uid = pwd.getpwuid(os.getuid()).pw_uid  # type: ignore[attr-defined]
-                        xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{uid}")
-                    except (ImportError, KeyError, AttributeError):
-                        # Windows or missing pwd module - use default
-                        xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1000")
-                    rootless_socket = f"unix://{xdg_runtime}/docker.sock"
-                    try:
-                        self._client = docker.DockerClient(base_url=rootless_socket)  # type: ignore[attr-defined]
+                        if hasattr(os, "getuid"):
+                            uid = os.getuid()
+                            xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{uid}")
+                            rootless_socket = f"unix://{xdg_runtime}/docker.sock"
+                            self._client = docker.DockerClient(base_url=rootless_socket)
+                        else:
+                            # Windows - fall back to default
+                            self._client = docker.DockerClient.from_env()
                     except DockerException:
                         # Fall back to default
-                        self._client = docker.DockerClient.from_env()  # type: ignore[attr-defined]
+                        self._client = docker.DockerClient.from_env()
                 else:
-                    self._client = docker.DockerClient.from_env()  # type: ignore[attr-defined]
+                    self._client = docker.DockerClient.from_env()
 
                 self.logger.info(
                     "docker_client_connected",
@@ -301,6 +304,70 @@ class RegistryClient:
             )
             return False
 
+    def _push_and_collect(
+        self,
+        client: docker.DockerClient,
+        image_name: str,
+        tag: str,
+        auth_config: dict[str, str] | None = None,
+    ) -> tuple[list[str], str | None]:
+        """Push an image synchronously and collect all log entries.
+
+        This method runs entirely in a worker thread via asyncio.to_thread()
+        to avoid blocking the event loop during stream iteration.
+
+        Args:
+            client: Docker client instance
+            image_name: Repository name (without tag)
+            tag: Image tag
+            auth_config: Optional auth configuration dict
+
+        Returns:
+            Tuple of (push_log_lines, digest_or_none)
+
+        Raises:
+            PushError: If an error is detected in the push log stream
+            APIError: If the Docker API returns an error
+        """
+        push_response = client.images.push(
+            repository=image_name,
+            tag=tag,
+            stream=True,
+            decode=True,
+        )
+
+        push_log: list[str] = []
+        digest: str | None = None
+
+        for log_entry in push_response:
+            if isinstance(log_entry, dict):
+                # Extract status and progress
+                status_msg = log_entry.get("status", "")
+                progress_msg = log_entry.get("progress", "")
+
+                if status_msg:
+                    log_line = status_msg
+                    if progress_msg:
+                        log_line += f" {progress_msg}"
+                    push_log.append(log_line)
+
+                # Extract digest from aux field or status message
+                if "aux" in log_entry and isinstance(log_entry["aux"], dict):
+                    digest = log_entry["aux"].get("Digest") or log_entry["aux"].get("digest")
+                elif "status" in log_entry:
+                    # Try to extract digest from status message
+                    match = _DIGEST_PATTERN.search(log_entry["status"])
+                    if match:
+                        digest = match.group(1)
+
+                # Check for errors
+                if "error" in log_entry:
+                    error_msg = log_entry["error"]
+                    push_log.append(f"ERROR: {error_msg}")
+                    raise PushError(error_msg)
+
+        return push_log, digest
+
     async def push_image(
         self,
         image_tag: str,
@@ -337,45 +404,13 @@ class RegistryClient:
         try:
             client = await asyncio.to_thread(self._get_client)
 
-            # Push the image
-            push_response = await asyncio.to_thread(
-                client.images.push,
-                repository=image_tag.rsplit(":", 1)[0] if ":" in image_tag else image_tag,
-                tag=image_tag.rsplit(":", 1)[1] if ":" in image_tag else "latest",
-                stream=True,
-                decode=True,
+            image_name = image_tag.rsplit(":", 1)[0] if ":" in image_tag else image_tag
+            tag = image_tag.rsplit(":", 1)[1] if ":" in image_tag else "latest"
+
+            # Push and collect all logs in a single worker thread
+            push_log, digest = await asyncio.to_thread(
+                self._push_and_collect, client, image_name, tag
             )
-
-            # Collect push logs and extract digest
-            push_log: list[str] = []
-            digest: str | None = None
-
-            for log_entry in push_response:
-                if isinstance(log_entry, dict):
-                    # Extract status and progress
-                    status_msg = log_entry.get("status", "")
-                    progress_msg = log_entry.get("progress", "")
-
-                    if status_msg:
-                        log_line = f"{status_msg}"
-                        if progress_msg:
-                            log_line += f" {progress_msg}"
-                        push_log.append(log_line)
-
-                    # Extract digest from aux field or status message
-                    if "aux" in log_entry and isinstance(log_entry["aux"], dict):
-                        digest = log_entry["aux"].get("Digest") or log_entry["aux"].get("digest")
-                    elif "status" in log_entry:
-                        # Try to extract digest from status message
-                        match = _DIGEST_PATTERN.search(log_entry["status"])
-                        if match:
-                            digest = match.group(1)
-
-                    # Check for errors
-                    if "error" in log_entry:
-                        error_msg = log_entry["error"]
-                        push_log.append(f"ERROR: {error_msg}")
-                        raise APIError(error_msg)
 
             duration = time.monotonic() - start_time
 
@@ -394,6 +429,22 @@ class RegistryClient:
                 push_log=push_log,
                 duration_seconds=duration,
                 status=PushStatus.SUCCEEDED,
+            )
+
+        except PushError as e:
+            duration = time.monotonic() - start_time
+            self.logger.error(
+                "docker_push_log_error",
+                image_tag=image_tag,
+                error=str(e),
+                duration_seconds=round(duration, 2),
+            )
+            return PushResult(
+                success=False,
+                image_tag=image_tag,
+                duration_seconds=duration,
+                error=str(e),
+                status=PushStatus.FAILED,
             )
 
         except APIError as e:
@@ -470,7 +521,8 @@ class RegistryClient:
             if attempt > 0:
                 # Calculate exponential backoff delay
                 delay = min(
-                    retry_config.initial_delay_seconds * (retry_config.backoff_multiplier ** (attempt - 1)),
+                    retry_config.initial_delay_seconds
+                    * (retry_config.backoff_multiplier ** (attempt - 1)),
                     retry_config.max_delay_seconds,
                 )
 

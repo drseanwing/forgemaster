@@ -25,7 +25,6 @@ import asyncio
 import os
 import re
 import time
-from collections.abc import AsyncIterator
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -218,11 +217,16 @@ class DockerBuildClient:
                 if docker_host:
                     self._client = docker.DockerClient(base_url=docker_host)
                 elif self.config.rootless:
-                    # Try rootless socket paths
-                    xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
-                    rootless_socket = f"unix://{xdg_runtime}/docker.sock"
+                    # Try rootless socket paths (Unix-like systems only)
                     try:
-                        self._client = docker.DockerClient(base_url=rootless_socket)
+                        if hasattr(os, "getuid"):
+                            uid = os.getuid()
+                            xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{uid}")
+                            rootless_socket = f"unix://{xdg_runtime}/docker.sock"
+                            self._client = docker.DockerClient(base_url=rootless_socket)
+                        else:
+                            # Windows - fall back to default
+                            self._client = docker.DockerClient.from_env()
                     except DockerException:
                         # Fall back to default
                         self._client = docker.DockerClient.from_env()
@@ -305,7 +309,6 @@ class DockerBuildClient:
             tag: Tag for the built image (e.g., 'myapp:latest')
             build_args: Build-time variables to pass to Docker
             no_cache: If True, do not use cache when building
-            build_timeout: Optional timeout override in seconds
 
         Returns:
             BuildResult with image ID, tags, logs, and status
@@ -466,6 +469,41 @@ class DockerBuildClient:
                 status=BuildStatus.FAILED,
             )
 
+    def _build_and_collect_logs(
+        self, client: docker.DockerClient, build_kwargs: dict[str, Any]
+    ) -> list[BuildLogEntry]:
+        """Build a Docker image synchronously and collect all log entries.
+
+        This method runs entirely in a worker thread via asyncio.to_thread()
+        to avoid blocking the event loop during stream iteration.
+
+        Args:
+            client: Docker client instance
+            build_kwargs: Keyword arguments for client.api.build()
+
+        Returns:
+            List of BuildLogEntry instances from the build stream
+        """
+        response = client.api.build(**build_kwargs)
+
+        entries: list[BuildLogEntry] = []
+        for chunk in response:
+            if isinstance(chunk, dict):
+                entry = BuildLogEntry(
+                    stream=chunk.get("stream"),
+                    error=chunk.get("error"),
+                    status=chunk.get("status"),
+                    progress=chunk.get("progress"),
+                    aux=(
+                        {str(k): str(v) for k, v in chunk["aux"].items()}
+                        if "aux" in chunk and isinstance(chunk["aux"], dict)
+                        else None
+                    ),
+                )
+                entries.append(entry)
+
+        return entries
+
     async def build_image_streaming(
         self,
         path: Path,
@@ -473,11 +511,11 @@ class DockerBuildClient:
         tag: str | None = None,
         build_args: dict[str, str] | None = None,
         no_cache: bool = False,
-    ) -> AsyncIterator[BuildLogEntry]:
-        """Build a Docker image with streaming log output.
+    ) -> list[BuildLogEntry]:
+        """Build a Docker image and collect all log entries.
 
-        This method yields build log entries as they arrive, enabling real-time
-        progress monitoring of the build process.
+        This method collects all build log entries, enabling post-build
+        analysis of the build process.
 
         Args:
             path: Path to the build context directory
@@ -486,8 +524,8 @@ class DockerBuildClient:
             build_args: Build-time variables to pass to Docker
             no_cache: If True, do not use cache when building
 
-        Yields:
-            BuildLogEntry instances for each build event
+        Returns:
+            List of BuildLogEntry instances for each build event
 
         Raises:
             FileNotFoundError: If path or Dockerfile does not exist
@@ -501,13 +539,11 @@ class DockerBuildClient:
 
         # Validate paths
         if not path.exists():
-            yield BuildLogEntry(error=f"Build context path does not exist: {path}")
-            return
+            return [BuildLogEntry(error=f"Build context path does not exist: {path}")]
 
         dockerfile_path = path / dockerfile
         if not dockerfile_path.exists():
-            yield BuildLogEntry(error=f"Dockerfile not found: {dockerfile_path}")
-            return
+            return [BuildLogEntry(error=f"Dockerfile not found: {dockerfile_path}")]
 
         try:
             client = await asyncio.to_thread(self._get_client)
@@ -524,36 +560,23 @@ class DockerBuildClient:
             if build_args is not None:
                 build_kwargs["buildargs"] = build_args
 
-            # Use low-level API for streaming
-            response = await asyncio.to_thread(client.api.build, **build_kwargs)
+            # Build and collect all logs in a single worker thread
+            entries = await asyncio.to_thread(self._build_and_collect_logs, client, build_kwargs)
 
-            entry_count = 0
-            for chunk in response:
-                if isinstance(chunk, dict):
-                    entry = BuildLogEntry(
-                        stream=chunk.get("stream"),
-                        error=chunk.get("error"),
-                        status=chunk.get("status"),
-                        progress=chunk.get("progress"),
-                        aux=(
-                            {str(k): str(v) for k, v in chunk["aux"].items()}
-                            if "aux" in chunk and isinstance(chunk["aux"], dict)
-                            else None
-                        ),
+            # Log any errors found in entries
+            for entry in entries:
+                if entry.error:
+                    self.logger.error(
+                        "docker_build_stream_error",
+                        error=entry.error,
                     )
-                    entry_count += 1
-                    yield entry
-
-                    if entry.error:
-                        self.logger.error(
-                            "docker_build_stream_error",
-                            error=entry.error,
-                        )
 
             self.logger.info(
                 "docker_build_streaming_complete",
-                entries=entry_count,
+                entries=len(entries),
             )
+
+            return entries
 
         except Exception as e:
             self.logger.error(
@@ -561,7 +584,7 @@ class DockerBuildClient:
                 error=str(e),
                 error_type=type(e).__name__,
             )
-            yield BuildLogEntry(error=str(e))
+            return [BuildLogEntry(error=str(e))]
 
     def generate_sha_tag(
         self,

@@ -234,25 +234,30 @@ class HealthPoller:
             self._session = httpx.AsyncClient()
         return self._session
 
-    async def check_health(self) -> HealthCheckResult:
+    async def check_health(self, _timeout_override: float | None = None) -> HealthCheckResult:
         """Perform a single health check against the configured endpoint.
+
+        Args:
+            _timeout_override: Internal timeout override (use check_health_with_timeout
+                for the public API). If None, uses config timeout.
 
         Returns:
             HealthCheckResult with status and timing information
         """
         start_time = time.monotonic()
         checked_at = datetime.now(timezone.utc).isoformat()
+        effective_timeout = _timeout_override or self.config.timeout_seconds
 
         self.logger.debug(
             "health_check_started",
             url=self.config.url,
-            timeout=self.config.timeout_seconds,
+            timeout=effective_timeout,
         )
 
         try:
             session = await self._get_session()
 
-            response = await session.get(self.config.url, timeout=self.config.timeout_seconds)
+            response = await session.get(self.config.url, timeout=effective_timeout)
             response_time = time.monotonic() - start_time
             status_code = response.status_code
             body = response.text
@@ -440,16 +445,7 @@ class HealthPoller:
         Returns:
             HealthCheckResult with status and timing information
         """
-        if timeout_seconds is not None:
-            # Temporarily override the timeout
-            original_timeout = self.config.timeout_seconds
-            self.config.timeout_seconds = timeout_seconds
-            try:
-                return await self.check_health()
-            finally:
-                self.config.timeout_seconds = original_timeout
-        else:
-            return await self.check_health()
+        return await self.check_health(_timeout_override=timeout_seconds)
 
     async def poll_until_healthy(self, timeout_seconds: float = 120.0) -> HealthCheckResult:
         """Poll repeatedly until the service becomes healthy or timeout is reached.
@@ -800,7 +796,7 @@ class RollbackExecutor:
             )
             return RollbackResult(
                 success=True,
-                action="restart_container",
+                action=RollbackStrategy.RESTART_CONTAINER.value,
                 containers_affected=[container_id],
                 duration_seconds=duration,
             )
@@ -812,7 +808,7 @@ class RollbackExecutor:
             )
             return RollbackResult(
                 success=False,
-                action="restart_container",
+                action=RollbackStrategy.RESTART_CONTAINER.value,
                 containers_affected=[container_id],
                 error=action_result.error,
                 duration_seconds=duration,
@@ -837,7 +833,7 @@ class RollbackExecutor:
             self.logger.error("rollback_revert_missing_image", container_id=container_id)
             return RollbackResult(
                 success=False,
-                action="revert_image",
+                action=RollbackStrategy.REVERT_IMAGE.value,
                 error=error_msg,
                 duration_seconds=duration,
             )
@@ -859,7 +855,7 @@ class RollbackExecutor:
                 )
                 return RollbackResult(
                     success=False,
-                    action="revert_image",
+                    action=RollbackStrategy.REVERT_IMAGE.value,
                     previous_image=current_image,
                     error=error_msg,
                     duration_seconds=duration,
@@ -889,7 +885,7 @@ class RollbackExecutor:
                 )
                 return RollbackResult(
                     success=True,
-                    action="revert_image",
+                    action=RollbackStrategy.REVERT_IMAGE.value,
                     previous_image=current_image,
                     rollback_image=previous_image,
                     containers_affected=[container_id],
@@ -904,7 +900,7 @@ class RollbackExecutor:
                 )
                 return RollbackResult(
                     success=False,
-                    action="revert_image",
+                    action=RollbackStrategy.REVERT_IMAGE.value,
                     previous_image=current_image,
                     rollback_image=previous_image,
                     error=error_msg,
@@ -922,7 +918,7 @@ class RollbackExecutor:
             )
             return RollbackResult(
                 success=False,
-                action="revert_image",
+                action=RollbackStrategy.REVERT_IMAGE.value,
                 error=error_msg,
                 duration_seconds=duration,
             )
@@ -949,7 +945,7 @@ class RollbackExecutor:
             )
             return RollbackResult(
                 success=True,
-                action="stop_service",
+                action=RollbackStrategy.STOP_SERVICE.value,
                 containers_affected=[container_id],
                 duration_seconds=duration,
             )
@@ -961,7 +957,7 @@ class RollbackExecutor:
             )
             return RollbackResult(
                 success=False,
-                action="stop_service",
+                action=RollbackStrategy.STOP_SERVICE.value,
                 containers_affected=[container_id],
                 error=stop_result.error,
                 duration_seconds=duration,
