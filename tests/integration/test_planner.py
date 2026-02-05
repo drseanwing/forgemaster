@@ -16,6 +16,12 @@ from __future__ import annotations
 import pytest
 
 from forgemaster.agents.definitions.planner import PlannerConfig, get_planner_config
+from forgemaster.architecture.architect import (
+    ArchitectureDocument,
+    ComponentDefinition,
+    DeploymentModel,
+    TechnologyStack,
+)
 from forgemaster.architecture.planner import (
     ComponentTasks,
     DependencyEdge,
@@ -60,24 +66,52 @@ The system consists of three main components:
 
 
 @pytest.fixture
-def sample_architecture_doc() -> SpecDocument:
+def sample_architecture_doc() -> ArchitectureDocument:
     """Sample architecture document for testing."""
-    return SpecDocument(
-        title="Sample Project",
-        sections=[
-            SpecSection(
-                heading="Authentication Service",
-                level=2,
-                content="Handles user login and session management",
+    return ArchitectureDocument(
+        project_name="Sample Project",
+        version="0.1.0",
+        overview="A sample project with three main components",
+        components=[
+            ComponentDefinition(
+                name="Authentication Service",
+                description="Handles user login and session management",
+                responsibilities=[
+                    "User authentication",
+                    "Session management",
+                    "Token generation",
+                ],
+                dependencies=["Database Layer"],
+                interfaces=["AuthAPI"],
             ),
-            SpecSection(
-                heading="Database Layer", level=2, content="ORM and migrations"
+            ComponentDefinition(
+                name="Database Layer",
+                description="ORM and migrations",
+                responsibilities=["Data persistence", "Schema migrations"],
+                dependencies=[],
+                interfaces=["DatabaseInterface"],
             ),
-            SpecSection(
-                heading="API Gateway", level=2, content="RESTful API endpoints"
+            ComponentDefinition(
+                name="API Gateway",
+                description="RESTful API endpoints",
+                responsibilities=["Request routing", "Response formatting"],
+                dependencies=["Authentication Service"],
+                interfaces=["RestAPI"],
             ),
         ],
-        raw_content="",
+        technology_stack=TechnologyStack(
+            runtime="Python 3.12+",
+            frameworks=["FastAPI", "SQLAlchemy"],
+            database="PostgreSQL",
+            messaging="Redis",
+            infrastructure="Docker",
+        ),
+        deployment_model=DeploymentModel(
+            strategy="container-based",
+            environments=["development", "production"],
+            scaling="horizontal",
+            monitoring="Prometheus",
+        ),
     )
 
 
@@ -205,7 +239,7 @@ def test_task_decomposer_initialization() -> None:
     assert decomposer is not None
 
 
-def test_task_decomposer_decompose(sample_architecture_doc: SpecDocument) -> None:
+def test_task_decomposer_decompose(sample_architecture_doc: ArchitectureDocument) -> None:
     """Test task decomposition from architecture document."""
     decomposer = TaskDecomposer()
     plan = decomposer.decompose(sample_architecture_doc)
@@ -217,7 +251,7 @@ def test_task_decomposer_decompose(sample_architecture_doc: SpecDocument) -> Non
 
 
 def test_task_decomposer_identify_components(
-    sample_architecture_doc: SpecDocument,
+    sample_architecture_doc: ArchitectureDocument,
 ) -> None:
     """Test component identification from architecture."""
     decomposer = TaskDecomposer()
@@ -226,6 +260,8 @@ def test_task_decomposer_identify_components(
     assert len(components) == 3
     assert all(isinstance(c, ComponentTasks) for c in components)
     assert any(c.component_name == "Authentication Service" for c in components)
+    # Each component should generate 3 tasks (implement, test, document)
+    assert all(len(c.tasks) == 3 for c in components)
 
 
 def test_task_decomposer_estimate_complexity() -> None:
@@ -699,7 +735,7 @@ def test_group_optimization_multiple_groups() -> None:
 # Integration tests combining multiple components
 
 
-def test_full_planning_pipeline(sample_architecture_doc: SpecDocument) -> None:
+def test_full_planning_pipeline(sample_architecture_doc: ArchitectureDocument) -> None:
     """Test complete planning pipeline from architecture to parallel groups."""
     # Step 1: Decompose architecture
     decomposer = TaskDecomposer()

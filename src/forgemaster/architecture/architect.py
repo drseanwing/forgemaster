@@ -427,17 +427,16 @@ class ArchitectureGenerator:
         """Generate data flow definitions."""
         flows: list[DataFlowDefinition] = []
 
-        # Create flows based on component dependencies
-        for i, comp in enumerate(components):
-            if i + 1 < len(components):
-                flow = DataFlowDefinition(
-                    source=comp.name,
-                    destination=components[i + 1].name,
-                    data_type="Request",
-                    protocol="HTTP",
-                )
-                flows.append(flow)
-                comp.dependencies.append(components[i + 1].name)
+        # Create flows based on component adjacency
+        # Note: This does NOT modify component dependencies
+        for i in range(len(components) - 1):
+            flow = DataFlowDefinition(
+                source=components[i].name,
+                destination=components[i + 1].name,
+                data_type="Request",
+                protocol="HTTP",
+            )
+            flows.append(flow)
 
         return flows
 
@@ -637,7 +636,7 @@ class TechnologyEvaluator:
             scores[option] = weighted_score
 
         # Determine winner
-        winner = max(scores, key=scores.get)  # type: ignore
+        winner = max(scores, key=lambda k: scores[k])
         winner_score = scores[winner]
 
         # Generate rationale
