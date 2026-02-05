@@ -1,0 +1,119 @@
+{# Coding standards context template #}
+# Coding Standards: {{ language|upper }}
+
+## Language Configuration
+- **Language**: {{ language }}
+- **Formatter**: {{ formatter }}
+- **Linter**: {{ linter }}
+- **Type Checker**: {{ type_checker }}
+
+## Naming Conventions
+
+### Files and Modules
+{% for rule in naming_rules.files %}
+- {{ rule }}
+{% endfor %}
+
+### Classes and Types
+{% for rule in naming_rules.classes %}
+- {{ rule }}
+{% endfor %}
+
+### Functions and Methods
+{% for rule in naming_rules.functions %}
+- {{ rule }}
+{% endfor %}
+
+### Variables and Constants
+{% for rule in naming_rules.variables %}
+- {{ rule }}
+{% endfor %}
+
+## Code Organization
+
+### Module Structure
+```
+{{ patterns.module_structure }}
+```
+
+### Import Order
+{% for rule in patterns.import_order %}
+{{ loop.index }}. {{ rule }}
+{% endfor %}
+
+## Error Handling Patterns
+
+### Exception Hierarchy
+{% for exception in patterns.exceptions %}
+- **{{ exception.name }}**: {{ exception.use_case }}
+{% endfor %}
+
+### Error Handling Best Practices
+{% for practice in patterns.error_handling %}
+- {{ practice }}
+{% endfor %}
+
+## Logging Patterns
+
+### Log Levels
+{% for level in patterns.logging.levels %}
+- **{{ level.name }}**: {{ level.usage }}
+{% endfor %}
+
+### Structured Logging
+```python
+{{ patterns.logging.example }}
+```
+
+## Type Hints
+
+### Required Type Hints
+{% for requirement in patterns.type_hints.requirements %}
+- {{ requirement }}
+{% endfor %}
+
+### Common Type Patterns
+```python
+{{ patterns.type_hints.examples }}
+```
+
+## Documentation Standards
+
+### Docstring Format
+```
+{{ patterns.docstring_format }}
+```
+
+### Documentation Requirements
+{% for requirement in patterns.documentation %}
+- {{ requirement }}
+{% endfor %}
+
+## Testing Standards
+
+### Test Organization
+{% for rule in patterns.testing.organization %}
+- {{ rule }}
+{% endfor %}
+
+### Test Naming
+{% for rule in patterns.testing.naming %}
+- {{ rule }}
+{% endfor %}
+
+### Coverage Requirements
+- Minimum line coverage: {{ patterns.testing.min_coverage }}%
+- Critical paths require 100% coverage
+- All public APIs must have tests
+
+## Performance Guidelines
+
+{% for guideline in patterns.performance %}
+- {{ guideline }}
+{% endfor %}
+
+## Security Considerations
+
+{% for consideration in patterns.security %}
+- {{ consideration }}
+{% endfor %}
