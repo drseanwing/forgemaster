@@ -4,6 +4,19 @@ This module manages embedding generation via Ollama, semantic search over
 lessons learned, and knowledge retrieval for agent context injection.
 """
 
+from forgemaster.intelligence.context_search import (
+    ContextSearchService,
+    SearchQuery,
+    SearchResult,
+    SearchStrategy,
+)
+from forgemaster.intelligence.lesson_verifier import (
+    LessonVerifier,
+    TestDiscoveryResult,
+    TestExecutionResult,
+    VerificationResult,
+    VerificationStatus,
+)
 from forgemaster.intelligence.embeddings import (
     EmbeddingClient,
     EmbeddingService,
@@ -33,4 +46,15 @@ __all__ = [
     "EmbeddingWorker",
     "QueueItem",
     "QueueRepository",
+    # Context search
+    "ContextSearchService",
+    "SearchResult",
+    "SearchQuery",
+    "SearchStrategy",
+    # Lesson verifier
+    "LessonVerifier",
+    "TestDiscoveryResult",
+    "TestExecutionResult",
+    "VerificationResult",
+    "VerificationStatus",
 ]
