@@ -1,0 +1,27 @@
+[Unit]
+Description=Forgemaster Autonomous Development Orchestrator
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=forgemaster
+Group=forgemaster
+WorkingDirectory=/opt/forgemaster
+ExecStart=/opt/forgemaster/.venv/bin/forgemaster orchestrator start --project-id %i
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+WatchdogSec=120
+Environment=FORGEMASTER_DATABASE__URL=postgresql+asyncpg://forgemaster:password@localhost:5432/forgemaster
+EnvironmentFile=-/etc/forgemaster/environment
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/data/forgemaster /opt/forgemaster
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

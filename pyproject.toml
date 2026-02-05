@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "forgemaster"
+version = "0.1.0"
+description = "Autonomous development orchestration system"
+requires-python = ">=3.12"
+dependencies = [
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.29",
+    "alembic>=1.13",
+    "pgvector>=0.2",
+    "structlog>=24.1",
+    "pydantic>=2.5",
+    "pydantic-settings>=2.1",
+    "tomli>=2.0",
+    "tomli-w>=1.0",
+    "jinja2>=3.1",
+    "gitpython>=3.1",
+    "docker>=7.0",
+    "httpx>=0.26",
+    "typer>=0.9",
+    "rich>=13.7",
+    "uvicorn>=0.27",
+    "fastapi>=0.109",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=4.1",
+    "httpx>=0.26",
+]
+dev = [
+    "black>=24.1",
+    "ruff>=0.2",
+    "mypy>=1.8",
+    "pre-commit>=3.6",
+]
+
+[project.scripts]
+forgemaster = "forgemaster.main:app"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "TCH"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests requiring database",
+    "e2e: End-to-end tests requiring full stack",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/forgemaster"]

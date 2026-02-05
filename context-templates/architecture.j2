@@ -1,0 +1,75 @@
+{# Architecture context template for project structure and technology stack #}
+# Architecture Context: {{ project_name }}
+
+## Technology Stack
+
+### Core Technologies
+{% for tech in tech_stack %}
+- **{{ tech.name }}**: {{ tech.version }} - {{ tech.purpose }}
+{% endfor %}
+
+### Development Tools
+{% if dev_tools %}
+{% for tool in dev_tools %}
+- {{ tool.name }}: {{ tool.purpose }}
+{% endfor %}
+{% endif %}
+
+## Component Overview
+
+The project is organized into the following major components:
+
+{% for component in components %}
+### {{ component.name }}
+**Location**: `{{ component.path }}`
+
+{{ component.description }}
+
+**Key Modules**:
+{% for module in component.modules %}
+- `{{ module.name }}`: {{ module.purpose }}
+{% endfor %}
+
+**Dependencies**:
+{% if component.dependencies %}
+{% for dep in component.dependencies %}
+- {{ dep }}
+{% endfor %}
+{% else %}
+- None (standalone component)
+{% endif %}
+
+{% endfor %}
+
+## Deployment Architecture
+
+### Environment Configuration
+- **Development**: {{ deployment_info.development }}
+- **Testing**: {{ deployment_info.testing }}
+- **Production**: {{ deployment_info.production }}
+
+### Infrastructure Components
+{% if deployment_info.infrastructure %}
+{% for infra in deployment_info.infrastructure %}
+- **{{ infra.name }}**: {{ infra.description }}
+  - Technology: {{ infra.technology }}
+  - Purpose: {{ infra.purpose }}
+{% endfor %}
+{% endif %}
+
+### Data Flow
+{{ deployment_info.data_flow|default("Standard request-response pattern with database persistence.") }}
+
+## Integration Points
+
+{% if integration_points %}
+{% for integration in integration_points %}
+### {{ integration.name }}
+- **Type**: {{ integration.type }}
+- **Protocol**: {{ integration.protocol }}
+- **Authentication**: {{ integration.auth }}
+- **Documentation**: {{ integration.docs_url }}
+{% endfor %}
+{% else %}
+No external integrations configured.
+{% endif %}

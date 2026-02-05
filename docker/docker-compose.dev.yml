@@ -1,0 +1,63 @@
+# Development override - use with:
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up
+services:
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: runtime
+    image: forgemaster:dev
+    volumes:
+      # Mount source code for hot reload
+      - ../src/forgemaster:/app/forgemaster:rw
+      - ../agent-templates:/app/agent-templates:ro
+      - ../context-templates:/app/context-templates:ro
+      # Mount tests directory for development testing
+      - ../tests:/app/tests:ro
+      - forgemaster-logs:/app/logs
+      - forgemaster-context:/app/context
+    environment:
+      # Development database
+      DATABASE_URL: postgresql+asyncpg://forgemaster:devpassword@postgres:5432/forgemaster
+
+      # Ollama configuration
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+
+      # Development logging
+      LOG_LEVEL: DEBUG
+      LOG_FORMAT: console
+
+      # Development mode
+      FORGEMASTER_ENV: development
+      PYTHONUNBUFFERED: "1"
+
+    # Enable hot reload for development
+    command: ["serve", "--reload"]
+
+    # Lower resource limits for development
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      # Expose for local database tools
+      - "5432:5432"
+
+  ollama:
+    ports:
+      # Expose for local testing
+      - "11434:11434"
+
+  # Disable ollama-init in dev (manual model pull for faster iteration)
+  ollama-init:
+    profiles:
+      - donotstart
