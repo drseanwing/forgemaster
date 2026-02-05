@@ -7,7 +7,7 @@ and retrieving queue statistics.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
@@ -123,7 +123,7 @@ async def mark_processed(
             .where(EmbeddingQueueItem.id == item_id)
             .values(
                 status="completed",
-                processed_at=datetime.utcnow(),
+                processed_at=datetime.now(timezone.utc),
             )
         )
         await session.execute(stmt)
@@ -170,7 +170,7 @@ async def mark_failed(
             .where(EmbeddingQueueItem.id == item_id)
             .values(
                 status="failed",
-                processed_at=datetime.utcnow(),
+                processed_at=datetime.now(timezone.utc),
                 error_message=error_message,
             )
         )

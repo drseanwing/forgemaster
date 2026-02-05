@@ -25,6 +25,7 @@ dependencies = [
     "rich>=13.7",
     "uvicorn>=0.27",
     "fastapi>=0.109",
+    "numpy>=1.26",
 ]
 
 [project.optional-dependencies]

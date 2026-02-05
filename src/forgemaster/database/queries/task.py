@@ -6,7 +6,7 @@ Task records, including dependency-aware task selection and status updates.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
@@ -163,11 +163,11 @@ async def update_task_status(
 
     # Set started_at when transitioning to running
     if new_status == TaskStatus.running and task.started_at is None:
-        updates["started_at"] = datetime.utcnow()
+        updates["started_at"] = datetime.now(timezone.utc)
 
     # Set completed_at when reaching terminal states
     if new_status in {TaskStatus.done, TaskStatus.failed} and task.completed_at is None:
-        updates["completed_at"] = datetime.utcnow()
+        updates["completed_at"] = datetime.now(timezone.utc)
 
     async with session.begin():
         stmt = update(Task).where(Task.id == task_id).values(**updates)

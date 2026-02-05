@@ -12,7 +12,7 @@ Tests cover:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -192,7 +192,7 @@ class TestTaskStateMachine:
     async def test_transition_preserves_started_at(self, state_machine, mock_session, sample_task):
         """Test transition to RUNNING preserves existing started_at."""
         sample_task.status = TaskStatus.review
-        original_time = datetime.utcnow()
+        original_time = datetime.now(timezone.utc)
         sample_task.started_at = original_time
 
         mock_result = MagicMock()

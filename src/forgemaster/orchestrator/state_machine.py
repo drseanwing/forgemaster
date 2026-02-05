@@ -10,7 +10,7 @@ tasks only become ready when all their dependencies are complete.
 from __future__ import annotations
 
 import structlog
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -119,10 +119,10 @@ class TaskStateMachine:
 
         # Set timestamps based on target status
         if target_status == TaskStatus.running and task.started_at is None:
-            task.started_at = datetime.utcnow()
+            task.started_at = datetime.now(timezone.utc)
 
         if target_status == TaskStatus.done:
-            task.completed_at = datetime.utcnow()
+            task.completed_at = datetime.now(timezone.utc)
 
         # Log the transition
         self.logger.info(

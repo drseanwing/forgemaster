@@ -7,7 +7,7 @@ and monitoring loop lifecycle management.
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -107,8 +107,8 @@ class TestIdleSessionDetection:
             task_id=task_id,
             model="claude-sonnet-4",
             status=SessionStatus.active,
-            started_at=datetime.utcnow() - timedelta(minutes=10),
-            last_activity_at=datetime.utcnow() - timedelta(minutes=6),
+            started_at=datetime.now(timezone.utc) - timedelta(minutes=10),
+            last_activity_at=datetime.now(timezone.utc) - timedelta(minutes=6),
         )
 
         # Mock database queries
@@ -414,8 +414,8 @@ class TestTaskStatusUpdates:
             task_id=task_id,
             model="claude-sonnet-4",
             status=SessionStatus.active,
-            started_at=datetime.utcnow() - timedelta(minutes=10),
-            last_activity_at=datetime.utcnow() - timedelta(minutes=6),
+            started_at=datetime.now(timezone.utc) - timedelta(minutes=10),
+            last_activity_at=datetime.now(timezone.utc) - timedelta(minutes=6),
         )
 
         task_after_increment = Task(
@@ -475,8 +475,8 @@ class TestTaskStatusUpdates:
             task_id=task_id,
             model="claude-sonnet-4",
             status=SessionStatus.active,
-            started_at=datetime.utcnow() - timedelta(minutes=10),
-            last_activity_at=datetime.utcnow() - timedelta(minutes=6),
+            started_at=datetime.now(timezone.utc) - timedelta(minutes=10),
+            last_activity_at=datetime.now(timezone.utc) - timedelta(minutes=6),
         )
 
         task_after_increment = Task(
