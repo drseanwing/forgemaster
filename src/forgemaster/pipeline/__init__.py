@@ -39,6 +39,7 @@ from forgemaster.pipeline.health import (
     RollbackTrigger,
 )
 from forgemaster.pipeline.registry import (
+    PushError,
     PushResult,
     PushStatus,
     RegistryAuth,
@@ -70,6 +71,7 @@ __all__ = [
     "WorktreePool",
     "WorktreeStatus",
     # Registry operations
+    "PushError",
     "PushResult",
     "PushStatus",
     "RegistryAuth",
