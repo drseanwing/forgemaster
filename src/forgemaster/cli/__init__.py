@@ -3,3 +3,7 @@
 This module implements the Typer-based command-line interface for project
 management, task operations, and system administration.
 """
+
+from forgemaster.cli import orchestrator, project, task
+
+__all__ = ["project", "task", "orchestrator"]
