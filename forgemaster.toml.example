@@ -1,0 +1,143 @@
+# Forgemaster Configuration Example
+#
+# Copy this file to one of the following locations:
+#   1. forgemaster.toml (in current directory)
+#   2. ~/.config/forgemaster/config.toml (user config)
+#
+# All settings shown here are the default values. You only need to specify
+# settings you want to override.
+#
+# Environment variables can also override any setting using the format:
+#   FORGEMASTER_<SECTION>__<KEY>=value
+#
+# Example:
+#   FORGEMASTER_DATABASE__URL="postgresql+asyncpg://localhost/mydb"
+#   FORGEMASTER_AGENT__MAX_CONCURRENT_WORKERS=5
+
+# ============================================================================
+# Database Configuration
+# ============================================================================
+[database]
+# PostgreSQL connection URL with asyncpg driver
+# Format: postgresql+asyncpg://user:password@host:port/database
+url = "postgresql+asyncpg://forgemaster:password@localhost:5432/forgemaster"
+
+# Connection pool size (range: 1-100)
+pool_size = 5
+
+# Maximum overflow connections beyond pool_size (range: 0-100)
+max_overflow = 10
+
+# Enable SQL query logging (useful for debugging)
+echo = false
+
+# Enable pgvector extension for semantic search with embeddings
+pgvector_enabled = true
+
+# ============================================================================
+# Ollama Embedding Service Configuration
+# ============================================================================
+[ollama]
+# Base URL of the Ollama API server
+url = "http://localhost:11434"
+
+# Embedding model to use for semantic search
+# Popular options: nomic-embed-text, mxbai-embed-large, all-minilm
+model = "nomic-embed-text"
+
+# Request timeout in seconds (range: 1-300)
+timeout_seconds = 30
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
+[logging]
+# Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+level = "INFO"
+
+# Log format: json or console
+# - json: Structured JSON logs (recommended for production)
+# - console: Human-readable colored output (recommended for development)
+format = "json"
+
+# Optional log file path (omit for stdout only)
+# Example: file = "/var/log/forgemaster/app.log"
+# file = null
+
+# Log file rotation size in megabytes (range: 1-1000)
+rotation_size_mb = 50
+
+# Number of rotated log files to retain (range: 1-100)
+retention_count = 10
+
+# ============================================================================
+# Agent Execution Configuration
+# ============================================================================
+[agent]
+# Maximum number of concurrent agent workers (range: 1-20)
+# Higher values increase throughput but consume more resources
+max_concurrent_workers = 3
+
+# Maximum session duration in seconds (range: 60-86400)
+# Sessions exceeding this timeout will be terminated
+# Default: 1800 (30 minutes)
+session_timeout_seconds = 1800
+
+# Idle timeout in seconds before session cleanup (range: 30-3600)
+# Sessions idle longer than this will be cleaned up
+# Default: 300 (5 minutes)
+idle_timeout_seconds = 300
+
+# Maximum retry attempts for failed operations (range: 0-10)
+max_retries = 3
+
+# Context window usage threshold for warnings (range: 0.0-1.0)
+# Warn when context usage exceeds this fraction of available space
+# Default: 0.8 (80% of context window)
+context_warning_threshold = 0.8
+
+# ============================================================================
+# Git Operations Configuration
+# ============================================================================
+[git]
+# Base path for git worktrees
+# Each agent session gets an isolated worktree under this path
+worktree_base_path = "/workspace"
+
+# Name of the main branch
+main_branch = "main"
+
+# Automatically push commits to remote after creation
+auto_push = true
+
+# ============================================================================
+# Docker Operations Configuration
+# ============================================================================
+[docker]
+# Docker registry URL for pushing images
+# Examples: ghcr.io, docker.io, registry.example.com
+registry = "ghcr.io"
+
+# Use rootless Docker daemon
+# Recommended for security in production environments
+rootless = true
+
+# Build operation timeout in seconds (range: 60-3600)
+# Default: 600 (10 minutes)
+build_timeout_seconds = 600
+
+# ============================================================================
+# Web Dashboard Configuration
+# ============================================================================
+[web]
+# Bind host address
+# - "0.0.0.0": Listen on all interfaces (production)
+# - "127.0.0.1": Listen on localhost only (development)
+host = "0.0.0.0"
+
+# Bind port number (range: 1-65535)
+port = 8000
+
+# Allowed CORS origins for API requests
+# Add your frontend URLs here
+cors_origins = ["http://localhost:3000"]
