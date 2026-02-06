@@ -32,6 +32,10 @@ from forgemaster.database.connection import get_engine, get_session_factory
 from forgemaster.logging import get_logger
 from forgemaster.web.middleware import RequestLoggingMiddleware
 from forgemaster.web.routes.health import create_health_router
+from forgemaster.web.routes.lessons import create_lessons_router
+from forgemaster.web.routes.projects import create_projects_router
+from forgemaster.web.routes.sessions import create_sessions_router
+from forgemaster.web.routes.tasks import create_tasks_router
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -142,6 +146,18 @@ def create_app(config: ForgemasterConfig | None = None) -> FastAPI:
     # Register routers
     health_router = create_health_router()
     app.include_router(health_router)
+
+    projects_router = create_projects_router()
+    app.include_router(projects_router)
+
+    tasks_router = create_tasks_router()
+    app.include_router(tasks_router)
+
+    sessions_router = create_sessions_router()
+    app.include_router(sessions_router)
+
+    lessons_router = create_lessons_router()
+    app.include_router(lessons_router)
 
     logger.info(
         "app_created",
