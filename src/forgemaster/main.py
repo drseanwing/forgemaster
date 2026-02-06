@@ -92,6 +92,56 @@ def initialize_context(config: ForgemasterConfig) -> AppContext:
     return _app_context
 
 
+@app.command()
+def serve(
+    host: Annotated[
+        str,
+        typer.Option("--host", "-h", help="Host to bind to"),
+    ] = "0.0.0.0",
+    port: Annotated[
+        int,
+        typer.Option("--port", "-p", help="Port to bind to"),
+    ] = 8000,
+    reload: Annotated[
+        bool,
+        typer.Option("--reload", "-r", help="Enable auto-reload (development)"),
+    ] = False,
+) -> None:
+    """Start the Forgemaster web server.
+
+    Runs the FastAPI application with uvicorn for serving the dashboard
+    and REST API endpoints.
+
+    Args:
+        host: Host address to bind to (default: 0.0.0.0)
+        port: Port number to bind to (default: 8000)
+        reload: Enable auto-reload for development
+    """
+    import uvicorn
+
+    from forgemaster.web.app import create_app
+
+    console.print("[bold cyan]Starting Forgemaster Web Server[/bold cyan]")
+    console.print(f"[dim]Host:[/dim] {host}")
+    console.print(f"[dim]Port:[/dim] {port}")
+    console.print()
+
+    # Load config and create app
+    config = load_config()
+
+    # Create the app
+    app_instance = create_app(config)
+
+    # Run with uvicorn
+    uvicorn.run(
+        app_instance,
+        host=host,
+        port=port,
+        reload=reload,
+        log_level="info",
+    )
+
+
 @app.callback()
 def main_callback(
     config_path: Annotated[
