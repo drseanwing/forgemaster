@@ -266,3 +266,12 @@ async def get_ready_tasks_endpoint(
     )
 
     return [TaskResponse.model_validate(task) for task in tasks]
+
+
+def create_tasks_router() -> APIRouter:
+    """Create the tasks router.
+
+    Returns:
+        Configured APIRouter for task endpoints.
+    """
+    return router

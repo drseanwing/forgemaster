@@ -55,6 +55,10 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "TCH"]
+ignore = [
+    "UP017",  # Prefer timezone.utc over datetime.UTC for cross-version compatibility
+    "UP042",  # Prefer (str, Enum) pattern for JSON serialization compatibility
+]
 
 [tool.mypy]
 strict = true
