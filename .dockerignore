@@ -79,3 +79,13 @@ logs/
 # Test databases
 *.db
 *.sqlite
+
+# Explicitly include required build files (override any accidental exclusions)
+# These MUST be in the build context for the Docker build to succeed
+!pyproject.toml
+!src/
+!alembic/
+!alembic.ini
+!docker/
+!agent-templates/
+!context-templates/
