@@ -15,9 +15,12 @@ from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from forgemaster.database.models.base import Base
+from forgemaster.web.app import create_app
+from forgemaster.web.routes.events import EventBroadcaster, get_broadcaster
 
 
 @pytest.fixture(scope="session")
@@ -90,3 +93,26 @@ async def db_session(
     async with session_factory() as session:
         yield session
         await session.rollback()
+
+
+@pytest_asyncio.fixture
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
+    """Create an async HTTP client for testing the FastAPI app.
+
+    Yields:
+        AsyncClient configured to test the application.
+    """
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
+
+
+@pytest_asyncio.fixture
+async def event_broadcaster() -> EventBroadcaster:
+    """Get the event broadcaster instance for testing.
+
+    Returns:
+        EventBroadcaster instance for broadcasting test events.
+    """
+    return get_broadcaster()

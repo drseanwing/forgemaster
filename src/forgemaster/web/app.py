@@ -31,6 +31,8 @@ from forgemaster.config import ForgemasterConfig
 from forgemaster.database.connection import get_engine, get_session_factory
 from forgemaster.logging import get_logger
 from forgemaster.web.middleware import RequestLoggingMiddleware
+from forgemaster.web.routes.dashboard import create_dashboard_router
+from forgemaster.web.routes.events import create_events_router
 from forgemaster.web.routes.health import create_health_router
 from forgemaster.web.routes.lessons import create_lessons_router
 from forgemaster.web.routes.projects import create_projects_router
@@ -158,6 +160,12 @@ def create_app(config: ForgemasterConfig | None = None) -> FastAPI:
 
     lessons_router = create_lessons_router()
     app.include_router(lessons_router)
+
+    events_router = create_events_router()
+    app.include_router(events_router)
+
+    dashboard_router = create_dashboard_router()
+    app.include_router(dashboard_router)
 
     logger.info(
         "app_created",

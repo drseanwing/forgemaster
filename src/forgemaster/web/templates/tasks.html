@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Task Board - Forgemaster{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Task Board</h1>
+        <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500">Auto-refresh</span>
+            <div hx-indicator class="inline-block">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SSE Connection for real-time updates -->
+    <div hx-ext="sse" sse-connect="/events/stream" sse-swap="task-update" hx-swap="none"></div>
+
+    <!-- Task Board Container -->
+    <div id="task-board"
+         hx-get="/tasks/"
+         hx-trigger="load, every 5s"
+         hx-swap="innerHTML"
+         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Loading state -->
+        <div class="col-span-full text-center p-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <p class="mt-2 text-gray-600">Loading tasks...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle SSE task updates
+    document.body.addEventListener('task-update', function(event) {
+        const data = JSON.parse(event.detail.data);
+        const taskCard = document.querySelector(`[data-task-id="${data.task_id}"]`);
+        if (taskCard) {
+            // Refresh the task board to show updated status
+            htmx.trigger('#task-board', 'htmx:trigger');
+        }
+    });
+</script>
+
+<!-- Template for task columns (loaded via htmx) -->
+<template id="task-column-template">
+    <div class="bg-white rounded-lg shadow-md p-4">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <span class="inline-block w-3 h-3 rounded-full mr-2"></span>
+            <span></span>
+            <span class="ml-auto text-sm font-normal text-gray-500"></span>
+        </h2>
+        <div class="space-y-3">
+            <!-- Task cards will be inserted here -->
+        </div>
+    </div>
+</template>
+
+<!-- Template for task cards (loaded via htmx) -->
+<template id="task-card-template">
+    <div class="bg-gray-50 rounded-md p-3 border-l-4 hover:shadow-md transition-shadow">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="font-medium text-gray-900"></h3>
+            <span class="text-xs px-2 py-1 rounded"></span>
+        </div>
+        <p class="text-sm text-gray-600 mb-2"></p>
+        <div class="flex justify-between items-center text-xs text-gray-500">
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</template>
+{% endblock %}
