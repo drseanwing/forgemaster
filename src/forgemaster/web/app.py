@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from forgemaster.config import ForgemasterConfig
 from forgemaster.database.connection import get_engine, get_session_factory
@@ -166,6 +167,12 @@ def create_app(config: ForgemasterConfig | None = None) -> FastAPI:
 
     dashboard_router = create_dashboard_router()
     app.include_router(dashboard_router)
+
+    # Root redirect to dashboard
+    @app.get("/", include_in_schema=False)
+    async def root_redirect() -> RedirectResponse:
+        """Redirect root to dashboard."""
+        return RedirectResponse(url="/dashboard/tasks")
 
     logger.info(
         "app_created",
