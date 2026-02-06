@@ -145,51 +145,6 @@ def create_sessions_router() -> APIRouter:
                 status_code=500, detail="Failed to list sessions"
             ) from exc
 
-    @router.get("/{session_id}", response_model=SessionResponse)
-    async def get_session_endpoint(
-        session_id: UUID,
-        session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
-            get_session_factory
-        ),
-    ) -> SessionResponse:
-        """Retrieve an agent session by ID.
-
-        Path Parameters:
-            session_id: UUID of the session to retrieve.
-
-        Args:
-            session_id: Session UUID.
-            session_factory: Injected session factory from app state.
-
-        Returns:
-            Agent session details.
-
-        Raises:
-            HTTPException: 404 if session not found.
-        """
-        try:
-            async with session_factory() as session:
-                agent_session = await get_session(session, session_id)
-
-            if agent_session is None:
-                logger.warning("session_not_found", session_id=str(session_id))
-                raise HTTPException(
-                    status_code=404, detail=f"Session {session_id} not found"
-                )
-
-            logger.debug("session_retrieved", session_id=str(session_id))
-            return SessionResponse.model_validate(agent_session)
-
-        except HTTPException:
-            raise
-        except Exception as exc:
-            logger.error(
-                "get_session_failed", error=str(exc), session_id=str(session_id)
-            )
-            raise HTTPException(
-                status_code=500, detail="Failed to retrieve session"
-            ) from exc
-
     @router.get("/active", response_model=list[SessionResponse])
     async def get_active_sessions_endpoint(
         session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
@@ -261,6 +216,51 @@ def create_sessions_router() -> APIRouter:
             )
             raise HTTPException(
                 status_code=500, detail="Failed to retrieve idle sessions"
+            ) from exc
+
+    @router.get("/{session_id}", response_model=SessionResponse)
+    async def get_session_endpoint(
+        session_id: UUID,
+        session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
+            get_session_factory
+        ),
+    ) -> SessionResponse:
+        """Retrieve an agent session by ID.
+
+        Path Parameters:
+            session_id: UUID of the session to retrieve.
+
+        Args:
+            session_id: Session UUID.
+            session_factory: Injected session factory from app state.
+
+        Returns:
+            Agent session details.
+
+        Raises:
+            HTTPException: 404 if session not found.
+        """
+        try:
+            async with session_factory() as session:
+                agent_session = await get_session(session, session_id)
+
+            if agent_session is None:
+                logger.warning("session_not_found", session_id=str(session_id))
+                raise HTTPException(
+                    status_code=404, detail=f"Session {session_id} not found"
+                )
+
+            logger.debug("session_retrieved", session_id=str(session_id))
+            return SessionResponse.model_validate(agent_session)
+
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.error(
+                "get_session_failed", error=str(exc), session_id=str(session_id)
+            )
+            raise HTTPException(
+                status_code=500, detail="Failed to retrieve session"
             ) from exc
 
     return router

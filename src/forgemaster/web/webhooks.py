@@ -36,13 +36,14 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any
 
 import httpx
-import structlog
 from pydantic import BaseModel, Field
+
+from forgemaster.logging import get_logger
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class WebhookEvent(str, Enum):

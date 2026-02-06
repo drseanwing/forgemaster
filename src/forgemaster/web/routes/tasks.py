@@ -7,14 +7,12 @@ ready task retrieval.
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import UUID
 
-import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from forgemaster.database.models.task import TaskStatus
 from forgemaster.database.queries.task import (
@@ -24,10 +22,12 @@ from forgemaster.database.queries.task import (
     list_tasks,
     update_task_status,
 )
+from forgemaster.logging import get_logger
 
-logger = structlog.get_logger(__name__)
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-router = APIRouter(prefix="/tasks", tags=["tasks"])
+logger = get_logger(__name__)
 
 
 # --- Pydantic Schemas ---
@@ -83,27 +83,34 @@ class TaskResponse(BaseModel):
 # --- Dependency Injection ---
 
 
-def get_session_factory(request: Request) -> Callable[[], AsyncSession]:
+def get_session_factory(request: Request) -> async_sessionmaker[AsyncSession]:
     """Extract session factory from FastAPI app state.
 
     Args:
         request: Incoming FastAPI request.
 
     Returns:
-        Callable that produces AsyncSession instances.
+        Session factory that produces AsyncSession instances.
     """
-    return request.app.state.session_factory
+    return request.app.state.session_factory  # type: ignore[return-value]
 
 
-# --- Route Handlers ---
+def create_tasks_router() -> APIRouter:
+    """Create the tasks router.
 
+    Returns:
+        Configured APIRouter for task endpoints.
+    """
+    router = APIRouter(prefix="/tasks", tags=["tasks"])
 
-@router.get("/", response_model=list[TaskResponse])
-async def list_tasks_endpoint(
-    project_id: UUID | None = None,
-    status: str | None = None,
-    session_factory: Callable[[], AsyncSession] = Depends(get_session_factory),
-) -> list[TaskResponse]:
+    @router.get("/", response_model=list[TaskResponse])
+    async def list_tasks_endpoint(
+        project_id: UUID | None = None,
+        status: str | None = None,
+        session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
+            get_session_factory
+        ),
+    ) -> list[TaskResponse]:
     """List tasks with optional project_id and status filters.
 
     Args:
@@ -140,14 +147,42 @@ async def list_tasks_endpoint(
         status=status,
     )
 
-    return [TaskResponse.model_validate(task) for task in tasks]
+        return [TaskResponse.model_validate(task) for task in tasks]
 
+    @router.get("/ready/{project_id}", response_model=list[TaskResponse])
+    async def get_ready_tasks_endpoint(
+        project_id: UUID,
+        session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
+            get_session_factory
+        ),
+    ) -> list[TaskResponse]:
+        """Get tasks ready for execution (all dependencies satisfied).
 
-@router.get("/{task_id}", response_model=TaskResponse)
-async def get_task_endpoint(
-    task_id: UUID,
-    session_factory: Callable[[], AsyncSession] = Depends(get_session_factory),
-) -> TaskResponse:
+        Args:
+            project_id: UUID of the project to search within.
+            session_factory: Injected session factory.
+
+        Returns:
+            List of ready TaskResponse objects, sorted by priority.
+        """
+        async with session_factory() as session:
+            tasks = await get_ready_tasks(session, project_id)
+
+        logger.info(
+            "ready_tasks_retrieved",
+            project_id=str(project_id),
+            count=len(tasks),
+        )
+
+        return [TaskResponse.model_validate(task) for task in tasks]
+
+    @router.get("/{task_id}", response_model=TaskResponse)
+    async def get_task_endpoint(
+        task_id: UUID,
+        session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
+            get_session_factory
+        ),
+    ) -> TaskResponse:
     """Get a single task by ID.
 
     Args:
@@ -167,15 +202,16 @@ async def get_task_endpoint(
         logger.warning("task_not_found", task_id=str(task_id))
         raise HTTPException(status_code=404, detail="Task not found")
 
-    logger.info("task_retrieved", task_id=str(task_id))
-    return TaskResponse.model_validate(task)
+        logger.info("task_retrieved", task_id=str(task_id))
+        return TaskResponse.model_validate(task)
 
-
-@router.post("/", response_model=TaskResponse, status_code=201)
-async def create_task_endpoint(
-    task_data: TaskCreate,
-    session_factory: Callable[[], AsyncSession] = Depends(get_session_factory),
-) -> TaskResponse:
+    @router.post("/", response_model=TaskResponse, status_code=201)
+    async def create_task_endpoint(
+        task_data: TaskCreate,
+        session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
+            get_session_factory
+        ),
+    ) -> TaskResponse:
     """Create a new task.
 
     Args:
@@ -201,16 +237,17 @@ async def create_task_endpoint(
             max_retries=task_data.max_retries,
         )
 
-    logger.info("task_created_via_api", task_id=str(task.id), title=task.title)
-    return TaskResponse.model_validate(task)
+        logger.info("task_created_via_api", task_id=str(task.id), title=task.title)
+        return TaskResponse.model_validate(task)
 
-
-@router.put("/{task_id}/status", response_model=TaskResponse)
-async def update_task_status_endpoint(
-    task_id: UUID,
-    status_update: TaskStatusUpdate,
-    session_factory: Callable[[], AsyncSession] = Depends(get_session_factory),
-) -> TaskResponse:
+    @router.put("/{task_id}/status", response_model=TaskResponse)
+    async def update_task_status_endpoint(
+        task_id: UUID,
+        status_update: TaskStatusUpdate,
+        session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
+            get_session_factory
+        ),
+    ) -> TaskResponse:
     """Update a task's status.
 
     Args:
@@ -238,40 +275,7 @@ async def update_task_status_endpoint(
             logger.warning("task_status_update_failed", task_id=str(task_id), error=str(e))
             raise HTTPException(status_code=404, detail=str(e))
 
-    logger.info("task_status_updated_via_api", task_id=str(task_id), status=new_status.value)
-    return TaskResponse.model_validate(task)
+        logger.info("task_status_updated_via_api", task_id=str(task_id), status=new_status.value)
+        return TaskResponse.model_validate(task)
 
-
-@router.get("/ready/{project_id}", response_model=list[TaskResponse])
-async def get_ready_tasks_endpoint(
-    project_id: UUID,
-    session_factory: Callable[[], AsyncSession] = Depends(get_session_factory),
-) -> list[TaskResponse]:
-    """Get tasks ready for execution (all dependencies satisfied).
-
-    Args:
-        project_id: UUID of the project to search within.
-        session_factory: Injected session factory.
-
-    Returns:
-        List of ready TaskResponse objects, sorted by priority.
-    """
-    async with session_factory() as session:
-        tasks = await get_ready_tasks(session, project_id)
-
-    logger.info(
-        "ready_tasks_retrieved",
-        project_id=str(project_id),
-        count=len(tasks),
-    )
-
-    return [TaskResponse.model_validate(task) for task in tasks]
-
-
-def create_tasks_router() -> APIRouter:
-    """Create the tasks router.
-
-    Returns:
-        Configured APIRouter for task endpoints.
-    """
     return router

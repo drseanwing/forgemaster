@@ -23,7 +23,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import status as http_status
 from pydantic import BaseModel, Field
 
 from forgemaster.database.models.project import ProjectStatus
@@ -156,7 +157,7 @@ def create_projects_router() -> APIRouter:
                     valid_values=[s.value for s in ProjectStatus],
                 )
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                    status_code=http_status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid status: {status}. Valid values: {[s.value for s in ProjectStatus]}",
                 ) from None
 
@@ -202,14 +203,14 @@ def create_projects_router() -> APIRouter:
         if project is None:
             logger.warning("project_not_found", project_id=str(project_id))
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=http_status.HTTP_404_NOT_FOUND,
                 detail=f"Project {project_id} not found",
             )
 
         logger.info("project_retrieved", project_id=str(project_id))
         return ProjectResponse.model_validate(project)
 
-    @router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+    @router.post("/", response_model=ProjectResponse, status_code=http_status.HTTP_201_CREATED)
     async def create_project(
         project_data: ProjectCreate,
         session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
@@ -248,7 +249,7 @@ def create_projects_router() -> APIRouter:
                 name=project_data.name,
             )
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=http_status.HTTP_400_BAD_REQUEST,
                 detail=f"Failed to create project: {exc}",
             ) from exc
 
@@ -292,7 +293,7 @@ def create_projects_router() -> APIRouter:
                     valid_values=[s.value for s in ProjectStatus],
                 )
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                    status_code=http_status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid status: {project_data.status}. Valid values: {[s.value for s in ProjectStatus]}",
                 ) from None
         if project_data.config is not None:
@@ -305,7 +306,7 @@ def create_projects_router() -> APIRouter:
         if not updates:
             logger.warning("no_updates_provided", project_id=str(project_id))
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=http_status.HTTP_400_BAD_REQUEST,
                 detail="No fields to update",
             )
 
@@ -328,7 +329,7 @@ def create_projects_router() -> APIRouter:
             # Project not found
             logger.warning("project_not_found_for_update", project_id=str(project_id))
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=http_status.HTTP_404_NOT_FOUND,
                 detail=str(exc),
             ) from exc
         except Exception as exc:
@@ -338,11 +339,11 @@ def create_projects_router() -> APIRouter:
                 error=str(exc),
             )
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=http_status.HTTP_400_BAD_REQUEST,
                 detail=f"Failed to update project: {exc}",
             ) from exc
 
-    @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+    @router.delete("/{project_id}", status_code=http_status.HTTP_204_NO_CONTENT)
     async def delete_project(
         project_id: UUID,
         session_factory: async_sessionmaker[AsyncSession] = Depends(  # noqa: B008
@@ -367,7 +368,7 @@ def create_projects_router() -> APIRouter:
         if not deleted:
             logger.warning("project_not_found_for_deletion", project_id=str(project_id))
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=http_status.HTTP_404_NOT_FOUND,
                 detail=f"Project {project_id} not found",
             )
 
