@@ -46,8 +46,8 @@ class DatabaseConfig(BaseSettings):
     )
 
     url: str = Field(
-        default="postgresql+asyncpg://forgemaster:password@localhost:5432/forgemaster",
-        description="PostgreSQL connection URL",
+        default="postgresql+asyncpg://forgemaster@localhost:5432/forgemaster",
+        description="PostgreSQL connection URL (set password via FORGEMASTER_DATABASE__URL env var)",
     )
     pool_size: int = Field(default=5, ge=1, le=100)
     max_overflow: int = Field(default=10, ge=0, le=100)

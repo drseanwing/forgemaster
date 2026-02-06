@@ -15,7 +15,7 @@
     </div>
 
     <!-- SSE Connection for real-time updates -->
-    <div hx-ext="sse" sse-connect="/events/stream" sse-swap="task-update" hx-swap="none"></div>
+    <div hx-ext="sse" sse-connect="/events/stream" sse-swap="task_status" hx-swap="none"></div>
 
     <!-- Task Board Container -->
     <div id="task-board"
@@ -33,7 +33,7 @@
 
 <script>
     // Handle SSE task updates
-    document.body.addEventListener('task-update', function(event) {
+    document.body.addEventListener('task_status', function(event) {
         const data = JSON.parse(event.detail.data);
         const taskCard = document.querySelector(`[data-task-id="${data.task_id}"]`);
         if (taskCard) {

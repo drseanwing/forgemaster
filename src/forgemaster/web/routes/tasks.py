@@ -111,41 +111,41 @@ def create_tasks_router() -> APIRouter:
             get_session_factory
         ),
     ) -> list[TaskResponse]:
-    """List tasks with optional project_id and status filters.
+        """List tasks with optional project_id and status filters.
 
-    Args:
-        project_id: Optional project UUID to filter by.
-        status: Optional status string to filter by.
-        session_factory: Injected session factory.
+        Args:
+            project_id: Optional project UUID to filter by.
+            status: Optional status string to filter by.
+            session_factory: Injected session factory.
 
-    Returns:
-        List of TaskResponse objects.
+        Returns:
+            List of TaskResponse objects.
 
-    Raises:
-        HTTPException: 400 if status is invalid.
-    """
-    # Validate status if provided
-    status_filter = None
-    if status is not None:
-        try:
-            status_filter = TaskStatus[status]
-        except KeyError:
-            logger.warning("invalid_status_filter", status=status)
-            raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
+        Raises:
+            HTTPException: 400 if status is invalid.
+        """
+        # Validate status if provided
+        status_filter = None
+        if status is not None:
+            try:
+                status_filter = TaskStatus[status]
+            except KeyError:
+                logger.warning("invalid_status_filter", status=status)
+                raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
 
-    async with session_factory() as session:
-        tasks = await list_tasks(
-            session=session,
-            project_id=project_id,
-            status_filter=status_filter,
+        async with session_factory() as session:
+            tasks = await list_tasks(
+                session=session,
+                project_id=project_id,
+                status_filter=status_filter,
+            )
+
+        logger.info(
+            "tasks_listed",
+            count=len(tasks),
+            project_id=str(project_id) if project_id else None,
+            status=status,
         )
-
-    logger.info(
-        "tasks_listed",
-        count=len(tasks),
-        project_id=str(project_id) if project_id else None,
-        status=status,
-    )
 
         return [TaskResponse.model_validate(task) for task in tasks]
 
@@ -183,24 +183,24 @@ def create_tasks_router() -> APIRouter:
             get_session_factory
         ),
     ) -> TaskResponse:
-    """Get a single task by ID.
+        """Get a single task by ID.
 
-    Args:
-        task_id: UUID of the task to retrieve.
-        session_factory: Injected session factory.
+        Args:
+            task_id: UUID of the task to retrieve.
+            session_factory: Injected session factory.
 
-    Returns:
-        TaskResponse object.
+        Returns:
+            TaskResponse object.
 
-    Raises:
-        HTTPException: 404 if task not found.
-    """
-    async with session_factory() as session:
-        task = await get_task(session, task_id)
+        Raises:
+            HTTPException: 404 if task not found.
+        """
+        async with session_factory() as session:
+            task = await get_task(session, task_id)
 
-    if task is None:
-        logger.warning("task_not_found", task_id=str(task_id))
-        raise HTTPException(status_code=404, detail="Task not found")
+        if task is None:
+            logger.warning("task_not_found", task_id=str(task_id))
+            raise HTTPException(status_code=404, detail="Task not found")
 
         logger.info("task_retrieved", task_id=str(task_id))
         return TaskResponse.model_validate(task)
@@ -212,30 +212,30 @@ def create_tasks_router() -> APIRouter:
             get_session_factory
         ),
     ) -> TaskResponse:
-    """Create a new task.
+        """Create a new task.
 
-    Args:
-        task_data: Task creation data.
-        session_factory: Injected session factory.
+        Args:
+            task_data: Task creation data.
+            session_factory: Injected session factory.
 
-    Returns:
-        Newly created TaskResponse object.
-    """
-    async with session_factory() as session:
-        task = await create_task(
-            session=session,
-            project_id=task_data.project_id,
-            title=task_data.title,
-            agent_type=task_data.agent_type,
-            description=task_data.description,
-            model_tier=task_data.model_tier,
-            priority=task_data.priority,
-            estimated_minutes=task_data.estimated_minutes,
-            files_touched=task_data.files_touched,
-            dependencies=task_data.dependencies,
-            parallel_group=task_data.parallel_group,
-            max_retries=task_data.max_retries,
-        )
+        Returns:
+            Newly created TaskResponse object.
+        """
+        async with session_factory() as session:
+            task = await create_task(
+                session=session,
+                project_id=task_data.project_id,
+                title=task_data.title,
+                agent_type=task_data.agent_type,
+                description=task_data.description,
+                model_tier=task_data.model_tier,
+                priority=task_data.priority,
+                estimated_minutes=task_data.estimated_minutes,
+                files_touched=task_data.files_touched,
+                dependencies=task_data.dependencies,
+                parallel_group=task_data.parallel_group,
+                max_retries=task_data.max_retries,
+            )
 
         logger.info("task_created_via_api", task_id=str(task.id), title=task.title)
         return TaskResponse.model_validate(task)
@@ -248,32 +248,32 @@ def create_tasks_router() -> APIRouter:
             get_session_factory
         ),
     ) -> TaskResponse:
-    """Update a task's status.
+        """Update a task's status.
 
-    Args:
-        task_id: UUID of the task to update.
-        status_update: New status data.
-        session_factory: Injected session factory.
+        Args:
+            task_id: UUID of the task to update.
+            status_update: New status data.
+            session_factory: Injected session factory.
 
-    Returns:
-        Updated TaskResponse object.
+        Returns:
+            Updated TaskResponse object.
 
-    Raises:
-        HTTPException: 400 if status is invalid, 404 if task not found.
-    """
-    # Validate status
-    try:
-        new_status = TaskStatus[status_update.status]
-    except KeyError:
-        logger.warning("invalid_status_update", status=status_update.status)
-        raise HTTPException(status_code=400, detail=f"Invalid status: {status_update.status}")
-
-    async with session_factory() as session:
+        Raises:
+            HTTPException: 400 if status is invalid, 404 if task not found.
+        """
+        # Validate status
         try:
-            task = await update_task_status(session, task_id, new_status)
-        except ValueError as e:
-            logger.warning("task_status_update_failed", task_id=str(task_id), error=str(e))
-            raise HTTPException(status_code=404, detail=str(e))
+            new_status = TaskStatus[status_update.status]
+        except KeyError:
+            logger.warning("invalid_status_update", status=status_update.status)
+            raise HTTPException(status_code=400, detail=f"Invalid status: {status_update.status}")
+
+        async with session_factory() as session:
+            try:
+                task = await update_task_status(session, task_id, new_status)
+            except ValueError as e:
+                logger.warning("task_status_update_failed", task_id=str(task_id), error=str(e))
+                raise HTTPException(status_code=404, detail=str(e))
 
         logger.info("task_status_updated_via_api", task_id=str(task_id), status=new_status.value)
         return TaskResponse.model_validate(task)

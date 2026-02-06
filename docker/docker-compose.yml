@@ -32,7 +32,9 @@ services:
     volumes:
       - forgemaster-logs:/app/logs
       - forgemaster-context:/app/context
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # For rootless Docker, use host's XDG_RUNTIME_DIR socket
+      # Standard: /var/run/docker.sock (rootful) or $XDG_RUNTIME_DIR/docker.sock (rootless)
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
     networks:
       - forgemaster
     healthcheck:
