@@ -11,6 +11,12 @@ from __future__ import annotations
 
 from forgemaster.web.app import create_app
 from forgemaster.web.middleware import RequestLoggingMiddleware
+from forgemaster.web.routes.events import (
+    EventBroadcaster,
+    SSEEvent,
+    SSEEventType,
+    get_broadcaster,
+)
 from forgemaster.web.webhooks import (
     WebhookConfig,
     WebhookDispatcher,
@@ -20,8 +26,15 @@ from forgemaster.web.webhooks import (
 )
 
 __all__ = [
+    # Application
     "create_app",
     "RequestLoggingMiddleware",
+    # SSE Events
+    "EventBroadcaster",
+    "SSEEvent",
+    "SSEEventType",
+    "get_broadcaster",
+    # Webhooks
     "WebhookConfig",
     "WebhookDispatcher",
     "WebhookEndpoint",
